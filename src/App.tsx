@@ -1,39 +1,16 @@
-import { useState } from 'react'
+import { Routes, Route } from 'react-router-dom';
+import Login from './pages/Login';
+import Quiz from './pages/Quiz';
+import Result from './pages/Result';
 import './App.css'
 
 function App() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert(`Email: ${email}\nPassword: ${password}`);
-  }
-
   return (
-    <>
-      <h1>GlowGuide</h1>
-      <div className="Login">
-        <h2>Login</h2>
-        <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button type="submit">Login</button>
-        </form>
-      </div>
-    </>
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/quiz" element={<Quiz />} />
+      <Route path="/result" element={<Result />} />
+    </Routes>
   );
 }
 
