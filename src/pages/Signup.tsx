@@ -1,22 +1,22 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-function Login() {
+function Signup() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleSignup = (e: React.FormEvent) => {
         e.preventDefault();
         navigate('/quiz');
-    }
+    };
 
     return (
         <>
         <h1>GlowGuide</h1>
-        <div className="Login">
-            <h2>Login</h2>
-            <form onSubmit={handleLogin}>
+        <div className="Signup">
+            <h2>Sign Up</h2>
+            <form onSubmit={handleSignup}>
                 <input
                     type="email"
                     placeholder="Email"
@@ -31,14 +31,14 @@ function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
-                <button type="submit">Login</button>
+                <button type="submit">Sign Up</button>
             </form>
             <p style={{ marginTop: '1rem' }}>
-                Don't have an account? <Link to="/signup">Sign up here!</Link>
+                Already have an account? <Link to="/">Log in here!</Link>
             </p>
         </div>
         </>
     );
-    }
+}
 
-export default Login;
+export default Signup;

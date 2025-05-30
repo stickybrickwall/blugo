@@ -3,9 +3,8 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #386cb2;
+  background-color: #d3eaff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,11 +14,11 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #386cb2;
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #386cb2;
 }
 
 body {
@@ -28,6 +27,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #e6f4f9;
+  color: #386cb2;
 }
 
 h1 {
@@ -42,12 +43,13 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #7c9fcf;
+  color:#f9f9f9;
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #5275a5;
 }
 button:focus,
 button:focus-visible {
@@ -65,4 +67,22 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.Login form,
+.Signup form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: stretch; 
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.Login input,
+.Login button,
+.Signup input,
+.Signup button {
+  padding: 0.75rem;
+  font-size: 1rem;
 }

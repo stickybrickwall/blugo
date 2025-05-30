@@ -14,6 +14,10 @@ const questions = [
             question: "What is your skincare budget?",
             options: ["$10-$50", "$50-$100", "$100-$200", "Budget is not a concern"],
         },
+        {
+            question: "How would you describe your lifestyle?",
+            options: ["Often outdoors", "Often indoors/in airconditioned rooms", "Put on makeup often", "Irregular/insufficient sleep"],
+        },
     ];
 
 function Quiz() {
