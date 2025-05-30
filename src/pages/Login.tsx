@@ -3,12 +3,20 @@ import { useNavigate, Link } from 'react-router-dom';
 
 function Login() {
     const navigate = useNavigate();
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        navigate('/quiz');
+        navigate('/home', {
+            state: {
+                firstName,
+                lastName,
+                email
+            }
+        });
     }
 
     return (
@@ -17,6 +25,20 @@ function Login() {
         <div className="Login">
             <h2>Login</h2>
             <form onSubmit={handleLogin}>
+                <input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                />
+                <input
+                    type="text"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                />
                 <input
                     type="email"
                     placeholder="Email"

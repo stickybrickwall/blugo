@@ -1,4 +1,17 @@
+import { useNavigate, useLocation } from 'react-router-dom';
+
 function Result() {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { firstName, lastName } = location.state || {};
+
+    const goToHome = () => {
+        navigate('/home', { state: {
+            firstName, 
+            lastName
+        }});
+    };
+
     return (
         <div style={{ padding: '2rem' }}>
             <h1>Your Results:</h1>
@@ -12,6 +25,7 @@ function Result() {
             <p>We recommend La Mer's The Moisturizing Soft Cream Duo.</p>
             <h2>Step 5: Sunscreen</h2>
             <p>We recommend ANESSA Perfect UV Sunscreen Skincare Gel. </p>
+            <button onClick={goToHome} style={{ margin: '1rem' }}>Return to Home</button>
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const questions = [
         {
@@ -22,20 +22,47 @@ const questions = [
 
 function Quiz() {
     const [current, setCurrent] = useState(0);
-    const [answers, setAnswers] = useState<string[]>([]);
+    const [answers, setAnswers] = useState<string[]>(Array(questions.length).fill(''));
+    
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const handleAnswer = (option: string) => {
-        setAnswers([...answers, option]);
+    const { firstName, lastName } = location.state || {};
 
+    const handleSelect = (option: string) => {
+        const newAnswers = [...answers];
+        newAnswers[current] = option;
+        setAnswers(newAnswers);
+    };
+
+    const handleNext = () => {
         if (current + 1 < questions.length) {
             setCurrent(current + 1);
         } else {
-            navigate('/result', {state: { answers } });
+            navigate('/result', {state: { 
+                answers,
+                firstName,
+                lastName
+             } });
+        }
+    };
+
+    const handlePrevious = () => {
+        if (current > 0) {
+            setCurrent(current - 1);
         }
     };
 
     const q = questions[current];
+    const selectedAnswer = answers[current];
+
+    const buttonStyle = {
+        padding: '0.75rem 1.5rem',
+        fontSize: '1rem',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px'
+    };
 
     return(
         <div style={{padding: '2rem'}}>
@@ -43,10 +70,45 @@ function Quiz() {
             {q.options.map((option) => (
                 <button
                 key={option}
-                onClick={() => handleAnswer(option)} 
-                style={{ display: 'block', margin: '1rem 0' }}>{option}
+                onClick={() => handleSelect(option)} 
+                style={{ 
+                    display: 'block', 
+                    margin: '1rem 0',
+                    backgroundColor: selectedAnswer === option ? '#386cb2' : '#7c9fcf',
+                    color: selectedAnswer === option ? 'white' : '',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '8px',
+                    border: '1px solid #ccc',
+                    cursor: 'pointer'
+                }}>{option}
                 </button>
             ))}
+
+            <div style={{ marginTop: '2rem'}}>
+                <button 
+                onClick={handlePrevious} 
+                disabled={current===0}
+                style={{
+                    ...buttonStyle,
+                    backgroundColor: current > 0 ? '#386cb2' : '#b0c4de',
+                    cursor: current > 0 ? 'pointer' : 'not-allowed'
+                }}>
+                    Previous
+                </button>
+
+                <button 
+                onClick={handleNext} 
+                disabled={!selectedAnswer} 
+                style={{
+                    ...buttonStyle,
+                    marginLeft: '1rem',
+                    backgroundColor: selectedAnswer ? '#386cb2' : '#b0c4de',
+                    cursor: selectedAnswer ? 'pointer' : 'not-allowed',
+                    opacity: selectedAnswer ? 1 : 0.6
+                }}>
+                    {current===questions.length - 1 ? 'View Results' : 'Next'}
+                </button>
+            </div>
         </div>
     );
 }
