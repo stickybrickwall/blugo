@@ -15,6 +15,10 @@ const questions = [
             options: ["$10-$50", "$50-$100", "$100-$200", "Budget is not a concern"],
         },
         {
+            question: "How much time are you willing to spend on skincare daily?",
+            options: ["5-10 minutes", "10-20 minutes", "20-30 minutes", "More than half an hour"],
+        },
+        {
             question: "How would you describe your lifestyle?",
             options: ["Often outdoors", "Often indoors/in airconditioned rooms", "Put on makeup often", "Irregular/insufficient sleep"],
         },
