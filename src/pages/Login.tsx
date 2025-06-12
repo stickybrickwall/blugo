@@ -3,21 +3,41 @@ import { useNavigate, Link } from 'react-router-dom';
 
 function Login() {
     const navigate = useNavigate();
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        navigate('/home', {
-            state: {
-                firstName,
-                lastName,
-                email
+
+        try {
+            const res = await fetch('https://blugo-production.up.railway.app/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+
+                navigate('/home', {
+                    state: {
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email
+                    }
+                });
+            } else {
+                alert(data.error || 'Login failed');
             }
-        });
-    }
+        } catch (err) {
+            console.error(err);
+            alert('Something went wrong');
+        }
+    };
 
     return (
         <>
@@ -25,20 +45,6 @@ function Login() {
         <div className="Login">
             <h2>Login</h2>
             <form onSubmit={handleLogin}>
-                <input
-                    type="text"
-                    placeholder="First Name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                />
-                <input
-                    type="text"
-                    placeholder="Last Name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                />
                 <input
                     type="email"
                     placeholder="Email"
