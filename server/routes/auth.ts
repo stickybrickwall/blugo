@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import pool from '../db';
@@ -7,10 +7,11 @@ const router = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-
+router.post('/login', (req: Request, res: Response) : void => {
+    (async () => {
     try {
+        const { email, password } = req.body;
+
         const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         const user = result.rows[0];
 
@@ -36,6 +37,6 @@ router.post('/login', async (req, res) => {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
     }
-});
+})});
 
 export default router;
