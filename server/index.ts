@@ -15,6 +15,10 @@ app.use(express.json());
 app.use('/routes/auth', authRoutes);
 app.use('/routes/quiz', quizRoutes);
 
+app.get('/', (req, res) => {
+  res.send('GlowGuide backend is live.');
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

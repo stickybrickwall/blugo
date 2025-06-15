@@ -35,7 +35,7 @@ function Login() {
             }
         } catch (err) {
             console.error(err);
-            alert('Something went wrong');
+            alert('Something went wrong during login');
         }
     };
 
@@ -62,7 +62,7 @@ function Login() {
                 <button type="submit">Login</button>
             </form>
             <p style={{ marginTop: '1rem' }}>
-                Don't have an account? <Link to="/signup">Sign up here!</Link>
+                Don't have an account? <Link to="/signup">Signup here!</Link>
             </p>
         </div>
         </>

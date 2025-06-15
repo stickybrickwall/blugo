@@ -8,15 +8,37 @@ function Signup() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSignup = (e: React.FormEvent) => {
+    const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
-        navigate('/home', {
-            state: {
-                firstName,
-                lastName,
-                email
+
+        try {
+            const res = await fetch('https://glowguide-lqx9.onrender.com/routes/auth/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password, firstName, lastName })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                localStorage.setItem('token', data.token);
+
+                navigate('/home', {
+                    state: {
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email
+                    }
+                });
+            } else {
+                alert(data.error || 'Signup failed');
             }
-        });
+        } catch (err) {
+            console.error(err);
+            alert('Something went wrong during signup');
+        }
     };
 
     return (
