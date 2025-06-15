@@ -7,7 +7,10 @@ const router = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
-router.post('/login', (req: Request, res: Response) : void => {
+router.post('/login', (req, res) => {
+    res.json({ message: 'Logged in '});
+});
+/*
     (async () => {
     try {
         const { email, password } = req.body;
@@ -38,5 +41,6 @@ router.post('/login', (req: Request, res: Response) : void => {
         res.status(500).json({ error: 'Server error' });
     }
 })});
+*/
 
 export default router;
