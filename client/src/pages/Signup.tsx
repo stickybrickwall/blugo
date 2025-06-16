@@ -12,7 +12,7 @@ function Signup() {
         e.preventDefault();
 
         try {
-            const res = await fetch('https://glowguide-lqx9.onrender.com/routes/auth/signup', {
+            const res = await fetch('https://glowguide-lqx9.onrender.com/auth/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

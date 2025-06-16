@@ -10,7 +10,7 @@ function Login() {
         e.preventDefault();
 
         try {
-            const res = await fetch('https://glowguide-lqx9.onrender.com/routes/auth/login', {
+            const res = await fetch('https://glowguide-lqx9.onrender.com/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

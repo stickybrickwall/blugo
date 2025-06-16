@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-app.use('/routes/auth', authRoutes);
-app.use('/routes/quiz', quizRoutes);
+app.use('/auth', authRoutes);
+app.use('/quiz', quizRoutes);
 
 app.get('/', (req, res) => {
   res.send('GlowGuide backend is live.');

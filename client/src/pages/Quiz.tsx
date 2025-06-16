@@ -43,14 +43,10 @@ function Quiz() {
         if (current + 1 < questions.length) {
             setCurrent(current + 1);
         } else {
-            navigate('/result', {state: { 
-                answers,
-                firstName,
-                lastName
-             } });
+            submitQuiz();
         }
-    };
-
+    }
+    
     const handlePrevious = () => {
         if (current > 0) {
             setCurrent(current - 1);
@@ -66,6 +62,26 @@ function Quiz() {
         color: 'white',
         border: 'none',
         borderRadius: '8px'
+    };
+
+    const submitQuiz = async() => {
+        const token = localStorage.getItem('token');
+         const res = await fetch('https://glowguide-lqx9.onrender.com', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ responses: answers })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            console.log('Quiz saved');
+            navigate('/result', { state: { answers, firstName, lastName } });
+        } else {
+            alert('Failed to submit quiz: ' + data.error);
+        }
     };
 
     return(
