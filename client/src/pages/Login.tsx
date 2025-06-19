@@ -23,6 +23,8 @@ function Login() {
             if (res.ok) {
                 localStorage.setItem('token', data.token);
 
+                alert('Login successful!');
+
                 navigate('/home', {
                     state: {
                     firstName: data.firstName,

@@ -3,30 +3,18 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 const questions = [
         {
-            question: "What is your skin type?",
-            options: ["Oily", "Dry", "Combination", "Sensitive"],
+            question: "How does your skin feel right after washing?",
+            options: ["Very dry and tight", "Dry and tight", "Normal"],
         },
         {
-            question: "What is your biggest skin concern?",
-            options: ["Acne", "Aging", "Oiliness", "Dryness"],
-        },
-        {
-            question: "What is your skincare budget?",
-            options: ["$10-$50", "$50-$100", "$100-$200", "Budget is not a concern"],
-        },
-        {
-            question: "How much time are you willing to spend on skincare daily?",
-            options: ["5-10 minutes", "10-20 minutes", "20-30 minutes", "More than half an hour"],
-        },
-        {
-            question: "How would you describe your lifestyle?",
-            options: ["Often outdoors", "Often indoors/in airconditioned rooms", "Put on makeup often", "Irregular/insufficient sleep"],
+            question: "How oily does your skin feel by midday?",
+            options: ["Not oily", "Oily", "Very oily"],
         },
     ];
 
 function Quiz() {
     const [current, setCurrent] = useState(0);
-    const [answers, setAnswers] = useState<string[]>(Array(questions.length).fill(''));
+    const [answers, setAnswers] = useState<{ [question:string]: string }>({});
     
     const navigate = useNavigate();
     const location = useLocation();
@@ -34,9 +22,10 @@ function Quiz() {
     const { firstName, lastName } = location.state || {};
 
     const handleSelect = (option: string) => {
-        const newAnswers = [...answers];
-        newAnswers[current] = option;
-        setAnswers(newAnswers);
+        setAnswers((prev) => ({
+            ...prev,
+            [questions[current].question]: option
+        }));
     };
 
     const handleNext = () => {
@@ -54,7 +43,7 @@ function Quiz() {
     };
 
     const q = questions[current];
-    const selectedAnswer = answers[current];
+    const selectedAnswer = answers[q.question];
 
     const buttonStyle = {
         padding: '0.75rem 1.5rem',
@@ -66,7 +55,7 @@ function Quiz() {
 
     const submitQuiz = async() => {
         const token = localStorage.getItem('token');
-         const res = await fetch('https://glowguide-lqx9.onrender.com', {
+         const res = await fetch('https://glowguide-lqx9.onrender.com/quiz', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
