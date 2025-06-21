@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import pool from '../db';
-import { answerToTagMap } from '../mappings/answerToTagMap';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
@@ -20,14 +19,23 @@ router.post('/', async (req: Request, res: Response) => {
         return res.status(400).json({ error: 'Invalid response' });
       }
 
+      const answerValues = Object.values(responses);
+
+      const tagQuery = `
+        SELECT t.tag_name, SUM(ats.score) AS total_score
+        FROM answers a
+        JOIN answer_tag_scores ats ON a.id = ats.answer_id
+        JOIN tags t ON ats.tag_id = t.id
+        WHERE a.answer_text = ANY($1)
+        GROUP BY t.tag_name;
+      `;
+
+      const { rows } = await pool.query(tagQuery, [answerValues]); // Perform tagQuery
+
       const tagScores: { [tag: string]: number } = {};
-      for (const question in responses) {
-        const answer = responses[question];
-        const mappings = answerToTagMap[question]?.[answer] || [];
-        mappings.forEach(({ tag, score }) => {
-          tagScores[tag] = (tagScores[tag] || 0) + score;
-        });
-      }
+      rows.forEach(row => {
+        tagScores[row.tag_name] = Number(row.total_score);
+      });
 
       await pool.query(
         'INSERT INTO quiz_responses (user_id, responses, tags) VALUES ($1, $2, $3)',
@@ -35,6 +43,7 @@ router.post('/', async (req: Request, res: Response) => {
       );
 
       res.json({ message: 'Quiz saved with tags', tags: tagScores });
+
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Server error' });
