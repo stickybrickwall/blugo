@@ -193,6 +193,23 @@ function Quiz() {
                     {current===questions.length - 1 ? 'View Results' : 'Next'}
                 </button>
             </div>
+
+            <div style={{ marginTop: '2rem'}}>
+            {current === 0 && (
+                <button
+                    onClick={() => navigate('/home')}
+                    style={{
+                        ...buttonStyle,
+                        backgroundColor: '#386cb2',
+                        marginBottom: '1rem',
+                        cursor: 'pointer'
+                    }}
+                >
+                    Home
+                </button>
+            )}
+            </div>
+
         </div>
     );
 }
