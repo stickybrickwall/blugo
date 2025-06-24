@@ -83,7 +83,7 @@ const questions = [
     },
     { //Q15
     question: "What is your budget per product?",
-    options: ["< $20", "$20 - $50", "> $50"]
+    options: ["< $30", "$30 - $60", "> $60"]
     }
 ];
 
