@@ -22,8 +22,6 @@ type Result = {
 export function selectTopPerCategory(
     productScores: Record<number, number>, 
     productDetails: Record<number, ProductDetails>,
-    productIngredients: Record<number, number[]>,
-    ingredientScores: Record<number, number>
 ): Record<number, Result> {
     const grouped = new Map<number, ProductDetails[]>();
 
@@ -49,22 +47,13 @@ export function selectTopPerCategory(
         }
 
         const pid = topProduct.id;
-        const ingList = productIngredients[pid] || [];
-        
-        const ingScoreMap: Record<string, number> = {};
-        ingList.forEach(ingId => {
-            if (ingredientScores[ingId]) {
-                ingScoreMap[String(ingId)] = ingredientScores[ingId];
-            }
-        });
 
         topPerCategory[catId] = {
             id: pid,
             name: topProduct.name,
-            category_id: topProduct.id,
+            category_id: topProduct.category,
             price: topProduct.price,
             score: productScores[pid],
-            ingredients: ingScoreMap,
         };
 
     }

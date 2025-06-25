@@ -6,7 +6,7 @@ export async function getProductIngredients(productIds: number[])
 : Promise<Record<number, number[]>> {
     const result = await pool.query(`
         SELECT product_id, ingredient_id
-        FROM product_ingredient_map
+        FROM product_ingredients_map
         WHERE product_id = ANY($1)
   ` , [productIds]);
 

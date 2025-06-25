@@ -37,7 +37,7 @@ router.post('/', async (req: Request, res: Response) => {
       tagScores[row.tag_id] = Number(row.total_score);
     }
 
-    // Step 2: Write to user_tag_scores table
+    // Write to user_tag_scores DB
     for (const [tagId, score] of Object.entries(tagScores)) {
       await pool.query(`
         INSERT INTO user_tag_scores (user_id, tag_id, score)
@@ -47,7 +47,7 @@ router.post('/', async (req: Request, res: Response) => {
       `, [userId, +tagId, score]);
     }
 
-    // Step 3: (Optional) Fetch tag_name for storing readable summary
+    // Fetch tag_name for storing readable summary
     const nameQuery = `
       SELECT id, tag_name FROM tags WHERE id = ANY($1)
     `;
@@ -59,7 +59,7 @@ router.post('/', async (req: Request, res: Response) => {
       readableScores[row.tag_name] = tagScores[row.id];
     }
 
-    // Step 4: Save raw quiz answers + readable tag summary
+    // Save raw quiz answers + readable tag summary
     await pool.query(
       'INSERT INTO quiz_responses (user_id, responses, tags) VALUES ($1, $2, $3)',
       [userId, responses, readableScores]
