@@ -2,7 +2,7 @@
 
 import pool from '../db';
 
-export async function getBlockedIngredients(tagIds: number[]): Promise<number[]> {
+export async function getBlockedIngredients(tagIds: number[]): Promise<Set<number>> {
     const result = await pool.query(`
         SELECT ingredient_id
         FROM tag_ingredient_blocklist
@@ -10,5 +10,6 @@ export async function getBlockedIngredients(tagIds: number[]): Promise<number[]>
     `, [tagIds]
     );
 
-    return result.rows.map(row => row.ingredient_id);
+    const ingredientIds = result.rows.map(row => row.ingredient_id);
+    return new Set<number>(ingredientIds);
 }

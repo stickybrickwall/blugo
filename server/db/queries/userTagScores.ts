@@ -2,13 +2,11 @@
 
 import pool from '../db';
 
-export async function getUserTagScores(userId: String): Promise<Record<number, number>> {
+export async function getUserTagScores(userId: number): Promise<Record<number, number>> {
     const query = `
-        SELECT tags
-        FROM quiz_responses
+        SELECT tag_id, score
+        FROM user_tag_scores
         WHERE user_id = $1
-        ORDER BY submitted_at DESC
-        LIMIT 1
     `;
 
     const result = await pool.query(query, [userId]);

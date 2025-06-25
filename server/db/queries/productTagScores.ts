@@ -3,7 +3,7 @@ import pool from '../db';
 
 export async function getProductTagScores(): Promise<Record<number, Record<number, number>>> {
     const result = await pool.query(`
-        SELECT product_id, tag_id, score FROM product_tag_score
+        SELECT product_id, tag_id, score FROM product_tag_scores
     `);
 
     const map: Record<number, Record<number, number>> = {}

@@ -13,7 +13,11 @@ import { computeProductScores } from '../services/scorer';
 const router = Router();
 
 router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, res: Response) => {
-  try {
+    (async() => {
+    try {
+    if (!req.user) {
+        return res.status(401).json({ error: 'User not authenticated' });
+    }
     const userId = req.user.id;
 
     // Step 1: Load user scores and tag metadata
@@ -34,21 +38,23 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
     // Step 4: Filter by blocklist
     const normUserScore = Object.keys(normalised).map(Number);
     const blockedIngredients = await getBlockedIngredients(normUserScore);
-    const productIngredients = await getProductIngredients();
+    const productIds = Object.keys(productScores).map(Number)
+    const productIngredients = await getProductIngredients(productIds);
     const filteredProducts = filterByBlocklist(productScores, blockedIngredients, productIngredients);
 
     // Step 5: Filter by budget
-    const budgetFiltered = filterByBudget(filteredProducts, normalised);
+    const productDetails = await getProductDetails();
+    const budgetFiltered = filterByBudget(filteredProducts, normalised, productDetails);
 
     // Step 6: Select top per category
-    const allDetails = await getProductDetails();
-    const topProducts = selectTopPerCategory(budgetFiltered, allDetails);
+    const topProducts = selectTopPerCategory(budgetFiltered, productDetails);
 
     res.json({ recommendations: topProducts });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Recommendation generation failed' });
   }
+})
 });
 
 export default router;

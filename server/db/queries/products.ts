@@ -10,7 +10,7 @@ export interface ProductDetails {
 }
 export async function getProductDetails(): Promise<Record<number, ProductDetails>> {
     const result = await pool.query(`
-        SELECT id, product_name AS name, category, price
+        SELECT id, product_name AS name, category_id AS category, price
         FROM products
     `);
 

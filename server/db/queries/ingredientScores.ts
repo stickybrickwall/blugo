@@ -3,14 +3,13 @@
 
 import pool from '../db';
 
-export async function getTagIngredientMap(): Promise<Record<string, Record<number, number>>> {
+export async function getTagIngredientMap(): Promise<Record<number, Record<number, number>>> {
   const result = await pool.query(`
-        SELECT t.name AS tag, ti.ingredient_id, ti.score_weight
-        FROM tag_ingredient_map ti
-        JOIN tags t ON ti.tag_id = t.id
+        SELECT tag_id AS tag, ingredient_id, score_weight
+        FROM tag_ingredient_map
     `);
 
-    const map: Record<string, Record<number, number>> = {};
+    const map: Record<number, Record<number, number>> = {};
 
     for (const row of result.rows) {
         if (!map[row.tag]) {
