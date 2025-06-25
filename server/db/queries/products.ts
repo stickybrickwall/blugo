@@ -1,0 +1,1 @@
+// Retrieve product info (id, name, category, price)
