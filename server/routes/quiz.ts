@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import pool from '../db/db';
 
+
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
@@ -13,6 +14,7 @@ router.post('/', async (req: Request, res: Response) => {
 
       const token = authHeader.split(' ')[1];
       const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+      const userId = decoded.id;
 
       const { responses } = req.body;
       if (!responses || typeof responses !== 'object') {
@@ -21,28 +23,49 @@ router.post('/', async (req: Request, res: Response) => {
 
       const answerValues = Object.values(responses);
 
-      const tagQuery = `
-        SELECT t.tag_name, SUM(ats.score) AS total_score
-        FROM answers a
-        JOIN answer_tag_scores ats ON a.id = ats.answer_id
-        JOIN tags t ON ats.tag_id = t.id
-        WHERE a.answer_text = ANY($1)
-        GROUP BY t.tag_name;
-      `;
+      const scoreQuery = `
+      SELECT ats.tag_id, SUM(ats.score) AS total_score
+      FROM answers a
+      JOIN answer_tag_scores ats ON a.id = ats.answer_id
+      WHERE a.answer_text = ANY($1)
+      GROUP BY ats.tag_id
+    `;
+    const scoreResult = await pool.query(scoreQuery, [answerValues]);
 
-      const { rows } = await pool.query(tagQuery, [answerValues]); // Perform tagQuery
+    const tagScores: Record<number, number> = {};
+    for (const row of scoreResult.rows) {
+      tagScores[row.tag_id] = Number(row.total_score);
+    }
 
-      const tagScores: { [tag: string]: number } = {};
-      rows.forEach(row => {
-        tagScores[row.tag_name] = Number(row.total_score);
-      });
+    // Step 2: Write to user_tag_scores table
+    for (const [tagId, score] of Object.entries(tagScores)) {
+      await pool.query(`
+        INSERT INTO user_tag_scores (user_id, tag_id, score)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (user_id, tag_id)
+        DO UPDATE SET score = EXCLUDED.score
+      `, [userId, +tagId, score]);
+    }
 
-      await pool.query(
-        'INSERT INTO quiz_responses (user_id, responses, tags) VALUES ($1, $2, $3)',
-        [decoded.id, responses, tagScores]
-      );
+    // Step 3: (Optional) Fetch tag_name for storing readable summary
+    const nameQuery = `
+      SELECT id, tag_name FROM tags WHERE id = ANY($1)
+    `;
+    const tagIds = Object.keys(tagScores).map(id => Number(id));
+    const nameResult = await pool.query(nameQuery, [tagIds]);
 
-      res.json({ message: 'Quiz saved with tags', tags: tagScores });
+    const readableScores: Record<string, number> = {};
+    for (const row of nameResult.rows) {
+      readableScores[row.tag_name] = tagScores[row.id];
+    }
+
+    // Step 4: Save raw quiz answers + readable tag summary
+    await pool.query(
+      'INSERT INTO quiz_responses (user_id, responses, tags) VALUES ($1, $2, $3)',
+      [userId, responses, readableScores]
+    );
+
+    res.json({ message: 'Quiz saved', tags: readableScores });
 
     } catch (err) {
       console.error(err);

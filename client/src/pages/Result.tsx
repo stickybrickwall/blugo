@@ -3,7 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 function Result() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { firstName, lastName } = location.state || {};
+    const { firstName, lastName, recData } = location.state || {};
+
+    const { recommendations } = recData;
 
     const goToHome = () => {
         navigate('/home', { state: {
@@ -12,19 +14,33 @@ function Result() {
         }});
     };
 
+    if (!recommendations) {
+        return (
+            <div style={{ padding: '2rem' }}>
+                <h2>Sorry, we couldn't load your recommendations.</h2>
+                <button onClick={goToHome}>Return to Home</button>
+            </div>
+        );
+    }
+
     return (
         <div style={{ padding: '2rem' }}>
-            <h1>Your Results:</h1>
-            <h2>Step 1: Cleanser</h2>
-            <p>We recommend Dr. Loretta's Gentle Hydrating Cleanser.</p>
-            <h2>Step 2: Toner</h2>
-            <p>We recommend CeraVe Hydrating Toner.</p>
-            <h2>Step 3: Serum</h2>
-            <p>We recommend The Ordinary Hyaluronic Acid.</p>
-            <h2>Step 4: Moisturiser</h2>
-            <p>We recommend La Mer's The Moisturizing Soft Cream Duo.</p>
-            <h2>Step 5: Sunscreen</h2>
-            <p>We recommend ANESSA Perfect UV Sunscreen Skincare Gel. </p>
+            <h2>Hi {firstName}, here’s your skincare profile</h2>
+
+            <h3>Top Product Picks:</h3>
+            {['cleanser', 'toner', 'serum', 'moisturiser'].map(cat => (
+                <div key={cat}>
+                    <h4>{cat}</h4>
+                    <p>{recommendations[cat]?.name}</p>
+                    <small>Score: {recommendations[cat]?.score}</small>
+                    <ul>
+                        {Object.entries(recommendations[cat]?.ingredients || {}).map(([ing, score]) => (
+                            <li key={ing}>{ing} ({score})</li>
+                        ))}
+                    </ul>
+                </div>
+            ))}
+
             <button onClick={goToHome} style={{ margin: '1rem' }}>Return to Home</button>
         </div>
     );

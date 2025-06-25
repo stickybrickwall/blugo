@@ -90,6 +90,7 @@ const questions = [
 function Quiz() {
     const [current, setCurrent] = useState(0);
     const [answers, setAnswers] = useState<{ [question:string]: string }>({});
+    const [loading, setLoading] = useState(false);
     
     const navigate = useNavigate();
     const location = useLocation();
@@ -117,9 +118,6 @@ function Quiz() {
         }
     };
 
-    const q = questions[current];
-    const selectedAnswer = answers[q.question];
-
     const buttonStyle = {
         padding: '0.75rem 1.5rem',
         fontSize: '1rem',
@@ -129,8 +127,11 @@ function Quiz() {
     };
 
     const submitQuiz = async() => {
+    setLoading(true);
+    try {
         const token = localStorage.getItem('token');
-         const res = await fetch('https://glowguide-lqx9.onrender.com/quiz', {
+        
+        const res = await fetch('https://glowguide-lqx9.onrender.com/quiz', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -140,13 +141,43 @@ function Quiz() {
         });
 
         const data = await res.json();
-        if (res.ok) {
-            console.log('Quiz saved');
-            navigate('/result', { state: { answers, firstName, lastName } });
-        } else {
+        if (!res.ok) {
             alert('Failed to submit quiz: ' + data.error);
+            setLoading(false);
+            return;
         }
+        console.log('Quiz saved');
+
+        const recRes = await fetch('https://glowguide-lqx9.onrender.com/recommendations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const recData = await recRes.json();
+
+        if (!recRes.ok) {
+            alert('Failed to generate recommendations: ' + recData.error);
+            setLoading(false);
+            return;
+        }
+        
+        navigate('/result', { state: { firstName, lastName, recData } });
+
+    } catch (err) {
+        console.error(err);
+        alert('Something went wrong with submitting your quiz.');
+    } finally {
+        setLoading(false);
+    }
     };
+
+    const q = questions[current];
+    const selectedAnswer = answers[q.question];
+
+    if (loading) return <p>Submitting your quiz and generating recommendations...</p>;
 
     return(
         <div style={{padding: '2rem'}}>
