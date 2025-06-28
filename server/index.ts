@@ -15,7 +15,7 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 app.use('/quiz', quizRoutes);
-app.use('/recommendations', recommendRoutes);
+app.use('/recommend', recommendRoutes);
 
 app.get('/', (req, res) => {
   res.send('GlowGuide backend is live.');
