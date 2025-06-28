@@ -58,7 +58,19 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       const topProducts = selectTopPerCategory(budgetFiltered, productDetails);
       console.log('Final recommendations:', topProducts);
 
-      res.json({ recommendations: topProducts });
+      const CATEGORY_MAP: Record<number, string> = {
+        1: 'cleanser',
+        2: 'toner',
+        3: 'serum',
+        4: 'moisturiser'
+      };
+
+      const readableRecommendations: Record<string, any> = {};
+      for (const [catId, product] of Object.entries(topProducts)) {
+        const name = CATEGORY_MAP[+catId];
+        if (name) readableRecommendations[name] = product;
+      }
+      res.json({ recommendations: readableRecommendations });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Recommendation generation failed' });
