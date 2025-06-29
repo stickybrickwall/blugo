@@ -44,8 +44,6 @@ function Home() {
 
     return (
         <div style = {{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
-            <h1>GlowGuide</h1>
-            <h2>Welcome, {firstName} {lastName}</h2>
             <img src="/blugo/logo.png" alt="GlowGuide Logo" style={{ width: '400px'}} />
             <h2 className="welcome-text">Welcome, {firstName} {lastName}!</h2>
             <button onClick={goToQuiz} className="home-button">Take the Quiz</button>

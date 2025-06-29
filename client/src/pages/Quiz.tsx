@@ -202,18 +202,6 @@ function Quiz() {
             {current === questions.length - 1 ? 'View Results' : 'Next'}
         </button>
         </div>
-
-        <div className="quiz-nav-buttons">
-        {current === 0 && (
-            <button
-            onClick={() => navigate('/home')}
-            className="quiz-button"
-            style={{ marginBottom: '1rem' }}
-            >
-            Home
-            </button>
-        )}
-        </div>
     </div>
     );
 }
