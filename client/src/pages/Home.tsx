@@ -45,8 +45,16 @@ function Home() {
 
     return (
         <div style = {{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
+            <div style={{ textAlign: 'center' }}>
             <img src="/blugo/logo.png" alt="GlowGuide Logo" style={{ width: '400px'}} />
-            <h2 className="welcome-text">Welcome, {firstName} {lastName}!</h2>
+            </div>
+            <h2 className="welcome-text" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
+                <strong>Welcome, {firstName} {lastName}!</strong></h2>
+            <p style={{ marginTop: 0, lineHeight: '1.6' }}>
+                Over <strong>400 products</strong> from <strong>150+ trusted brands</strong>, matched to<br />
+                your unique skin profile using our <strong>ingredient-first</strong> algorithm.<br />
+                No marketing gimmicks. Just science-backed recommendations.
+            </p>
             <button onClick={goToQuiz} className="home-button">Take the Quiz</button>
             <button onClick={handleLogout} className="home-button" style={{ backgroundColor: '#a6a6a6', color: 'white' }}>
                 Logout
