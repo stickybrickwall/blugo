@@ -44,13 +44,13 @@ function Result() {
             <h2>Hi {firstName}, here’s your skincare profile</h2>
 
             <h3>Top Product Picks:</h3>
-            {['cleanser', 'toner', 'serum', 'moisturiser'].map(cat => {
+            {['cleanser', 'toner', 'serum', 'moisturiser'].map((cat, index) => {
                 const rec = recommendations[cat];
                 return rec ? (
                 <div key={cat}>
-                    <h4>{cat}</h4>
+                    <h4>Step {index + 1}: {cat.charAt(0).toUpperCase() + cat.slice(1)}</h4>
                     <p>{rec.name}</p>
-                    <small>Score: {rec.score ?? 0}</small>
+                    <small>Match Score: {(rec.score ?? 0).toFixed(2)}</small>
                     <ul>
                         {Object.entries(rec.ingredients || {}).map(([ing, score]) => (
                             <li key={ing}>{ing} ({score})</li>

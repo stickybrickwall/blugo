@@ -5,16 +5,23 @@ import { ProductDetails } from '../db/queries/products';
 export function filterByBlocklist(
     productScores: Record<number, number>, 
     blockedIngredients: Set<number>, 
-    productIngredients: Record<number, number[]>
+    productIngredients: Record<number, number[]>,
+    allowTolerance: boolean = false
 ): Record<number, number> {
     const result: Record<number, number> = {};
 
     for (const[prodIdStr, score] of Object.entries(productScores)) {
         const prodId = +prodIdStr;
         const ingredients = productIngredients[prodId] || [];
-        const isBlocked = ingredients.some(ing => blockedIngredients.has(ing));
-        if (!isBlocked) result[prodId] = score;
-    }
+
+        const blockedCount = ingredients.filter(ing => blockedIngredients.has(ing)).length;
+        const ratio = blockedCount / ingredients.length;
+
+        const allow = allowTolerance ? ratio <= 0.2 : blockedCount === 0;
+
+        if (allow) result[prodId] = score;
+        }
+
     return result;
 }
 
