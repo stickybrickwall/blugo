@@ -18,7 +18,7 @@ function Home() {
                 return;
             }
             console.log('Token being sent:', token);
-            const res = await fetch('http://localhost:5000/recommend/latest', {
+            const res = await fetch('https://glowguide-lqx9.onrender.com/recommend/latest', {
             headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
