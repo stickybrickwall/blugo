@@ -9,6 +9,7 @@ function Home() {
         navigate('/quiz', { state: { firstName, lastName } });
     };
 
+    /*
     const handleViewPastResults = async () => {
         console.log('View past results clicked');
         const token = localStorage.getItem('token');
@@ -36,7 +37,7 @@ function Home() {
             alert('Error retrieving past result');
         }
         };
-
+*/
     const handleLogout = () => {
         localStorage.clear();
         navigate('/');
