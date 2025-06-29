@@ -9,6 +9,7 @@ function Home() {
         navigate('/quiz', { state: { firstName, lastName } });
     };
 
+<<<<<<< HEAD
     const handleViewPastResults = async () => {
         console.log('View past results clicked');
         const token = localStorage.getItem('token');
@@ -37,6 +38,8 @@ function Home() {
         }
         };
 
+=======
+>>>>>>> bf00589 (Styling of home page and login/signup page)
     const handleLogout = () => {
         localStorage.clear();
         navigate('/');
@@ -44,11 +47,18 @@ function Home() {
 
     return (
         <div style = {{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
+<<<<<<< HEAD
             <h1>GlowGuide</h1>
             <h2>Welcome, {firstName} {lastName}</h2>
             <button onClick={goToQuiz}>Take the Quiz</button>
 
             <button onClick={handleLogout} style={{ backgroundColor: '#a6a6a6', color: 'white' }}>
+=======
+            <img src="/blugo/logo.png" alt="GlowGuide Logo" style={{ width: '400px'}} />
+            <h2 className="welcome-text">Welcome, {firstName} {lastName}!</h2>
+            <button onClick={goToQuiz} className="home-button">Take the Quiz</button>
+            <button onClick={handleLogout} className="home-button" style={{ backgroundColor: '#a6a6a6', color: 'white' }}>
+>>>>>>> bf00589 (Styling of home page and login/signup page)
                 Logout
             </button>
         </div>

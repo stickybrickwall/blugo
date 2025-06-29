@@ -118,14 +118,6 @@ function Quiz() {
         }
     };
 
-    const buttonStyle = {
-        padding: '0.75rem 1.5rem',
-        fontSize: '1rem',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px'
-    };
-
     const submitQuiz = async() => {
     setLoading(true);
     try {
@@ -180,69 +172,49 @@ function Quiz() {
 
     if (loading) return <p>Submitting your quiz and generating recommendations...</p>;
 
-    return(
-        <div style={{padding: '2rem'}}>
-            <h2>{q.question}</h2>
-            {q.options.map((option) => (
-                <button
-                key={option}
-                onClick={() => handleSelect(option)} 
-                style={{ 
-                    display: 'block', 
-                    margin: '1rem 0',
-                    backgroundColor: selectedAnswer === option ? '#386cb2' : '#7c9fcf',
-                    color: selectedAnswer === option ? 'white' : '',
-                    padding: '0.75rem 1.5rem',
-                    borderRadius: '8px',
-                    border: '1px solid #ccc',
-                    cursor: 'pointer'
-                }}>{option}
-                </button>
-            ))}
+    return (
+    <div className="quiz-container">
+        <h2 className="quiz-question">{q.question}</h2>
+        {q.options.map((option) => (
+        <button
+            key={option}
+            onClick={() => handleSelect(option)}
+            className={`quiz-option ${selectedAnswer === option ? 'selected' : ''}`}
+        >
+            {option}
+        </button>
+        ))}
 
-            <div style={{ marginTop: '2rem'}}>
-                <button 
-                onClick={handlePrevious} 
-                disabled={current===0}
-                style={{
-                    ...buttonStyle,
-                    backgroundColor: current > 0 ? '#386cb2' : '#b0c4de',
-                    cursor: current > 0 ? 'pointer' : 'not-allowed'
-                }}>
-                    Previous
-                </button>
+        <div className="quiz-nav-buttons">
+        <button
+            onClick={handlePrevious}
+            disabled={current === 0}
+            className="quiz-button"
+        >
+            Previous
+        </button>
 
-                <button 
-                onClick={handleNext} 
-                disabled={!selectedAnswer} 
-                style={{
-                    ...buttonStyle,
-                    marginLeft: '1rem',
-                    backgroundColor: selectedAnswer ? '#386cb2' : '#b0c4de',
-                    cursor: selectedAnswer ? 'pointer' : 'not-allowed',
-                    opacity: selectedAnswer ? 1 : 0.6
-                }}>
-                    {current===questions.length - 1 ? 'View Results' : 'Next'}
-                </button>
-            </div>
-
-            <div style={{ marginTop: '2rem'}}>
-            {current === 0 && (
-                <button
-                    onClick={() => navigate('/home')}
-                    style={{
-                        ...buttonStyle,
-                        backgroundColor: '#386cb2',
-                        marginBottom: '1rem',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Home
-                </button>
-            )}
-            </div>
-
+        <button
+            onClick={handleNext}
+            disabled={!selectedAnswer}
+            className="quiz-button"
+        >
+            {current === questions.length - 1 ? 'View Results' : 'Next'}
+        </button>
         </div>
+
+        <div className="quiz-nav-buttons">
+        {current === 0 && (
+            <button
+            onClick={() => navigate('/home')}
+            className="quiz-button"
+            style={{ marginBottom: '1rem' }}
+            >
+            Home
+            </button>
+        )}
+        </div>
+    </div>
     );
 }
 
