@@ -9,6 +9,7 @@ import { getProductDetails } from '../db/queries/products';
 import { filterByBlocklist, filterByBudget } from '../services/filter';
 import { selectTopPerCategory } from '../services/selector';
 import { computeProductScores } from '../services/scorer';
+import pool from '../db/db';
 
 const router = Router();
 
@@ -107,14 +108,44 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
         } else {
           console.warn(`⚠️ Unmapped category ID ${catId} in results`);
         }
-    }
-      console.log('Final recommendations to frontend:', readableRecommendations);  
+      }
+      console.log('Final recommendations to frontend:', readableRecommendations);
+      
+    // Step 6: Save results
+      await pool.query(`
+        INSERT INTO user_recommendations (user_id, recommendations)
+        VALUES ($1, $2)
+        ON CONFLICT (user_id)
+        DO UPDATE SET recommendations = EXCLUDED.recommendations
+      `, [userId, readableRecommendations]);
+
       res.json({ recommendations: readableRecommendations });
+
     } catch (err) {
       console.error('Recommendation generaion failed: ', err);
       res.status(500).json({ error: 'Recommendation generation failed' });
     }
   })()
 });
+
+router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+  (async() => {
+  try {
+    const userId = req.user?.id;
+    const result = await pool.query(`
+      SELECT recommendations FROM user_recommendations
+      WHERE user_id = $1
+    `, [userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'No recommendations found' });
+    }
+
+    res.json({ recommendations: result.rows[0].recommendations });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch past recommendations' });
+  }
+})});
 
 export default router;
