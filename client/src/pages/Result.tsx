@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useReturnToHome  } from '../hooks/returnToHome';
 
 type Product = {
     name: string;
@@ -20,13 +21,14 @@ function Result() {
     const navigate = useNavigate();
     const location = useLocation();
     const { firstName, lastName, recData } = (location.state || {}) as LocationState;
+    const returnToHome = useReturnToHome();
 
     const { recommendations } = recData;
 
     const goToHome = () => {
         navigate('/home', { state: {
             firstName, 
-            lastName
+            lastName //goToHome should receive userId data too.
         }});
     };
 
@@ -62,7 +64,7 @@ function Result() {
                 );
             })}
 
-            <button onClick={goToHome} style={{ margin: '1rem' }}>
+            <button onClick={() => returnToHome(firstName, lastName)} className="quiz-button">
                 Return to Home
             </button>
         </div>

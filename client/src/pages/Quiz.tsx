@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useReturnToHome } from '../hooks/returnToHome';
 
 const questions = [
     { //Q1
@@ -94,6 +95,7 @@ function Quiz() {
     
     const navigate = useNavigate();
     const location = useLocation();
+    const returnToHome = useReturnToHome();
 
     const { firstName, lastName } = location.state || {};
 
@@ -175,15 +177,20 @@ function Quiz() {
     return (
     <div className="quiz-container">
         <h2 className="quiz-question">{q.question}</h2>
-        {q.options.map((option) => (
-        <button
-            key={option}
-            onClick={() => handleSelect(option)}
-            className={`quiz-option ${selectedAnswer === option ? 'selected' : ''}`}
-        >
-            {option}
-        </button>
-        ))}
+
+        <div className="quiz-options-container">
+        <div className="equal-width-wrapper">
+            {q.options.map((option) => (
+            <button
+                key={option}
+                onClick={() => handleSelect(option)}
+                className={`quiz-option ${selectedAnswer === option ? 'selected' : ''}`}
+            >
+                {option}
+            </button>
+            ))}
+        </div>
+        </div>
 
         <div className="quiz-nav-buttons">
         <button
@@ -202,6 +209,14 @@ function Quiz() {
             {current === questions.length - 1 ? 'View Results' : 'Next'}
         </button>
         </div>
+
+        {current === 0 && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
+            <button onClick={() => returnToHome(firstName, lastName)} className="quiz-button">
+            Return to Home
+            </button>
+        </div>
+        )}
     </div>
     );
 }

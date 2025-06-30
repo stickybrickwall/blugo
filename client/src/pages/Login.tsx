@@ -46,7 +46,7 @@ function Login() {
         <img src="/blugo/logo.png" alt="GlowGuide Logo" style={{ width: '400px'}} />
         <div className="Login">
             <div className="login-box">
-                <h2 className="login-title">LOGIN</h2>
+                <h2 className="login-title">Login</h2>
                 <form onSubmit={handleLogin}>
                     <input
                         type="email"

@@ -148,22 +148,34 @@ button:focus-visible {
   font-weight: 500
 }
 
+.quiz-options-container {
+  display: flex;
+  justify-content: center;
+}
+
+.equal-width-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: fit-content;
+  gap: 1rem;
+}
+
 .quiz-option {
-  display: block;
-  margin: 1rem 0;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   border: 1px solid #ccc;
   cursor: pointer;
   background-color: #56799f;
   color: white;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .quiz-option.selected {
   background-color: #1f628e;
   color: white;
   outline: none;
-  font-weight: 1000000;
 }
 
 .quiz-nav-buttons {
