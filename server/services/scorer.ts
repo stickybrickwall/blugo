@@ -24,7 +24,7 @@ export function computeProductScores(
             }
             // Scale the weight using a logarithmic function to reduce the impact of very high weights
             const scaledWeight = Math.log(1 + weight);
-            console.log(`Tag ${tagId}: raw=${weight}, scaled=${scaledWeight}, boostedUserScore=${userScore}`);
+            // console.log(`Tag ${tagId}: raw=${weight}, scaled=${scaledWeight}, boostedUserScore=${userScore}`);
             total += userScore * scaledWeight;
         }
         scores[productId] = total;

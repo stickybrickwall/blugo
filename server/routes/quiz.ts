@@ -37,13 +37,21 @@ router.post('/', async (req: Request, res: Response) => {
       tagScores[row.tag_id] = Number(row.total_score);
     }
 
+    const allTagIds = Array.from({ length: 18 }, (_, i) => i + 1);
+    for (const tagId of allTagIds) {
+      if (!(tagId in tagScores)) {
+        tagScores[tagId] = 0;
+      }
+    }
+
     // Write to user_tag_scores DB
     for (const [tagId, score] of Object.entries(tagScores)) {
+      console.log(`⬆️ Updating user_tag_scores for user ${userId}: Tag ${tagId} = ${score}`);
       await pool.query(`
-        INSERT INTO user_tag_scores (user_id, tag_id, score)
-        VALUES ($1, $2, $3)
+        INSERT INTO user_tag_scores (user_id, tag_id, score, updated_at)
+        VALUES ($1, $2, $3, NOW())
         ON CONFLICT (user_id, tag_id)
-        DO UPDATE SET score = EXCLUDED.score
+        DO UPDATE SET score = EXCLUDED.score, updated_at = NOW()
       `, [userId, +tagId, score]);
     }
 

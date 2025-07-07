@@ -94,7 +94,7 @@ function Result() {
             })}
 
             <h3>Top Skin Concerns</h3>
-            <ul>
+            <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
             {topSkinConcerns.map(({ tagId, score }) => (
                 <li key={tagId}>
                 {getTagName(tagId)}: {(score * 100).toFixed(1)}%
@@ -103,7 +103,7 @@ function Result() {
             </ul>
 
             <h3>Top Ingredients</h3>
-            <ul>
+            <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
             {topIngredients.map(({ ingredientId, name, score }) => (
                 <li key={ingredientId}>
                 {name}: {score.toFixed(2)}

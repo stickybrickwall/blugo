@@ -102,7 +102,7 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       }
 
     // Step 5: Select top product per category
-      const topProducts = selectTopPerCategory(budgetFiltered, productDetails);
+      const topProducts = selectTopPerCategory(filteredProducts, productDetails);
       console.log('Final recommendations:', topProducts);
 
       const readableRecommendations: Record<string, any> = {};
@@ -130,7 +130,7 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
         .sort((a, b) => b[1] - a[1])
         .slice(0,10)
         .map(([ingredientId, score]) => ({ ingredientId: +ingredientId, score }));
-        
+
       const ingredientIds = unblockedIngredientScores.map(i => i.ingredientId);
       const ingredientNameMap = await getIngredientNames(ingredientIds);
       const topIngredientsWithNames = unblockedIngredientScores.map(({ ingredientId, score }) => ({
