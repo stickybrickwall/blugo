@@ -5,10 +5,13 @@ import { getUserTagScores } from '../db/queries/userTagScores';
 import { getProductTagScores } from '../db/queries/productTagScores';
 import { getBlockedIngredients } from '../db/queries/blocklist';
 import { getProductIngredients } from '../db/queries/productIngredients';
+import { getTagIngredientMap } from '../db/queries/ingredientScores';
 import { getProductDetails } from '../db/queries/products';
+import { getIngredientNames } from '../db/queries/ingredients';
 import { filterByBlocklist, filterByBudget } from '../services/filter';
 import { selectTopPerCategory } from '../services/selector';
 import { computeProductScores } from '../services/scorer';
+import { computeIngredientScores } from '../services/scorer';
 import pool from '../db/db';
 
 const router = Router();
@@ -22,6 +25,8 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
     3: 'serum',
     4: 'moisturiser'
     };
+
+    const SKIN_CONCERN_TAGS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 
     const REQUIRED_CATEGORIES = Object.keys(CATEGORY_MAP).map(Number); 
     try {
@@ -51,7 +56,7 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
 
     // Step 3: Filter by budget
       const productDetails = await getProductDetails();
-      console.log('💾 Product details fetched:', Object.keys(productDetails).length);
+      console.log('Product details fetched:', Object.keys(productDetails).length);
       
       const budgetFiltered = filterByBudget(productScores, normalised, productDetails);
       console.log('Products after budget filter:', Object.keys(budgetFiltered).length);
@@ -110,6 +115,30 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
         }
       }
       console.log('Final recommendations to frontend:', readableRecommendations);
+
+    // Step 6: Send Top Tags and Ingredients
+      const skinConcernScores = Object.entries(normalised)
+        .filter(([tagId]) => SKIN_CONCERN_TAGS.has(+tagId))
+        .map(([tagId, score]) => ({ tagId: +tagId, score }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0,3);
+
+      const tagIngredientMap = await getTagIngredientMap();
+      const ingredientScores = computeIngredientScores(tagIngredientMap, normalised);
+      const unblockedIngredientScores = Object.entries(ingredientScores)
+        .filter(([ingredientIdStr]) => !blockedIngredients.has(+ingredientIdStr))
+        .sort((a, b) => b[1] - a[1])
+        .slice(0,10)
+        .map(([ingredientId, score]) => ({ ingredientId: +ingredientId, score }));
+        
+      const ingredientIds = unblockedIngredientScores.map(i => i.ingredientId);
+      const ingredientNameMap = await getIngredientNames(ingredientIds);
+      const topIngredientsWithNames = unblockedIngredientScores.map(({ ingredientId, score }) => ({
+        ingredientId,
+        name: ingredientNameMap[ingredientId] || 'Unknown',
+        score
+      }));
+      
       
     // Step 6: Save results
       await pool.query(`
@@ -119,7 +148,11 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
         DO UPDATE SET recommendations = EXCLUDED.recommendations
       `, [userId, readableRecommendations]);
 
-      res.json({ recommendations: readableRecommendations });
+      res.json({ 
+        recommendations: readableRecommendations,
+        topSkinConcerns: skinConcernScores,
+        topIngredients: topIngredientsWithNames 
+       });
 
     } catch (err) {
       console.error('Recommendation generaion failed: ', err);

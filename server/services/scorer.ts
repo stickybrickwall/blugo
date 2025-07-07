@@ -1,5 +1,4 @@
-// Computes product scores and filters
-
+// Computes product scores
 export function computeProductScores(
     productTagScores: Record<number, Record<number, number>>, 
     userScores: Record<number, number>
@@ -36,4 +35,26 @@ export function computeProductScores(
             .slice(0, 3)
     );
     return scores;
+}
+
+// Computes ingredient scores by aggregating weighted user tag scores
+
+export function computeIngredientScores(
+    tagIngredientMap: Record<number, Record<number, number>>,
+    userScores: Record<number, number>
+): Record<number, number> {
+    const ingredientScores: Record<number, number> = {};
+
+    for (const [tagIdStr, userScore] of Object.entries(userScores)) {
+    const tagId = +tagIdStr;
+    const ingredientWeights = tagIngredientMap[tagId];
+    if (!ingredientWeights) continue;
+
+    for (const [ingredientIdStr, weight] of Object.entries(ingredientWeights)) {
+      const ingredientId = +ingredientIdStr;
+      ingredientScores[ingredientId] = (ingredientScores[ingredientId] || 0) + weight * userScore;
+    }
+  }
+
+  return ingredientScores;
 }

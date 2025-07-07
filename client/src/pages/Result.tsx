@@ -14,6 +14,15 @@ type LocationState = {
     lastName: string;
     recData: {
         recommendations: Recommendations;
+        topSkinConcerns: {
+            tagId: number;
+            score: number;
+        }[];
+        topIngredients: {
+            ingredientId: number;
+            name: string;
+            score: number;
+        }[];
     };
 };
 
@@ -23,7 +32,11 @@ function Result() {
     const { firstName, lastName, recData } = (location.state || {}) as LocationState;
     const returnToHome = useReturnToHome();
 
-    const { recommendations } = recData;
+    const {
+        recommendations = {},
+        topSkinConcerns = [],
+        topIngredients = []
+    } = recData || {};
 
     const goToHome = () => {
         navigate('/home', { state: {
@@ -31,6 +44,22 @@ function Result() {
             lastName //goToHome should receive userId data too.
         }});
     };
+
+    const TAG_NAMES: Record<number, string> = {
+        1: 'Dry skin',
+        2: 'Oily skin',
+        3: 'Sensitive skin',
+        4: 'Clogged pores',
+        5: 'Textured skin',
+        6: 'Acne-prone skin',
+        7: 'Hyperpigmentation',
+        8: "Dullness",
+        9: "Redness",
+        10: "Dehydrated skin",
+        11: "Damaged skin barrier",
+        12: "Aging"
+    };
+    const getTagName = (id: number) => TAG_NAMES[id] || `Tag ${id}`;
 
     if (!recommendations) {
         return (
@@ -63,6 +92,24 @@ function Result() {
                     <p key={cat}>No recommendation available for {cat}</p>
                 );
             })}
+
+            <h3>Top Skin Concerns</h3>
+            <ul>
+            {topSkinConcerns.map(({ tagId, score }) => (
+                <li key={tagId}>
+                {getTagName(tagId)}: {(score * 100).toFixed(1)}%
+                </li>
+            ))}
+            </ul>
+
+            <h3>Top Ingredients</h3>
+            <ul>
+            {topIngredients.map(({ ingredientId, name, score }) => (
+                <li key={ingredientId}>
+                {name}: {score.toFixed(2)}
+                </li>
+            ))}
+            </ul>
 
             <button onClick={() => returnToHome(firstName, lastName)} className="quiz-button">
                 Return to Home
