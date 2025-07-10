@@ -23,8 +23,6 @@ function Login() {
             if (res.ok) {
                 localStorage.setItem('token', data.token);
 
-                alert('Login successful!');
-
                 navigate('/home', {
                     state: {
                     firstName: data.firstName,
@@ -42,34 +40,41 @@ function Login() {
     };
 
     return (
-        <>
-        <img src="/blugo/logo.png" alt="GlowGuide Logo" style={{ width: '400px'}} />
-        <div className="Login">
-            <div className="login-box">
-                <h2 className="login-title">Login</h2>
-                <form onSubmit={handleLogin}>
+        <div className="w-full min-h-screen bg-background overflow-x-hidden flex flex-col items-center justify-center px-4">
+            <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-full max-w-[400px]" />
+            <div className="bg-white rounded-xl mt-8 p-6 shadow-md w-full max-w-sm">
+                <h2 className="text-[#547fac] font-semibold text-center tracking-widest font-[Nunito] text-1xl mb-4">
+                    Log In to Existing Account
+                </h2>
+                <form onSubmit={handleLogin} className="flex flex-col gap-4">
                     <input
                         type="email"
                         placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
+                        className="p-3 rounded-md border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#1f628e]"
                     />
                     <input
                         type="password"
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                    required
+                        required
+                        className="p-3 rounded-md border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#1f628e]"
                     />
-                    <button type="submit">Login</button>
+                    <button 
+                        type="submit"
+                        className="bg-[#1f628e] text-white font-medium px-6 py-3 rounded-md hover:opacity-90 transition"
+                    >
+                        Login
+                    </button>
                 </form>
-                <p style={{ marginTop: '1rem' }}>
-                    Don't have an account? <Link to="/signup">Signup here!</Link>
+                <p className="mt-4 text-sm text-center font-nunito">
+                    Don't have an account? <Link to="/signup" className="text-[#1f628e] font-semibold underline">Signup here!</Link>
                 </p>
             </div>
         </div>
-    </>
     );
 }
 
