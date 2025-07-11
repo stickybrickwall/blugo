@@ -47,7 +47,7 @@ function Home() {
     return (
         <div className="min-h-screen bg-background text-primary font-poppins">
             {/* NAVBAR */}
-            <nav className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
+            <nav className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md font-nunito">
                 <div className="flex items-center">
                     <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-[150px]" />
                 </div>

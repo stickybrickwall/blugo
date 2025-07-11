@@ -42,7 +42,12 @@ function Signup() {
     };
 
     return (
-        <div className="w-full min-h-screen bg-background overflow-x-hidden flex flex-col items-center justify-center px-4">
+        <div className="w-full min-h-screen bg-background overflow-x-hidden flex flex-col items-center justify-center px-4 font-nunito">
+            <div
+                className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-20 z-0"
+                aria-hidden="true"
+            />
+        <div className="relative z-10 flex flex-col items-center justify-center">
         <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-full max-w-[400px] pt-12" />
         <div className="bg-white rounded-xl mt-8 mb-12 p-6 shadow-md w-full max-w-sm">
             <h2 className="text-[#547fac] font-semibold text-center tracking-widest font-nunito text-1xl mb-4">
@@ -92,6 +97,7 @@ function Signup() {
                     Already have an account? <Link to="/" className="text-[#1f628e] font-semibold underline">Log in here!</Link>
                 </p>
             </div>
+        </div>
         </div>
     );  
 }
