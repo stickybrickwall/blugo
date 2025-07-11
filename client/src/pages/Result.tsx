@@ -41,10 +41,36 @@ function Result() {
     const [topSkinConcerns,   setTopSkinConcerns]   = useState<SkinConcern[]>(state?.recData?.topSkinConcerns ?? []);
     const [topIngredients,    setTopIngredients]    = useState<Ingredient[]>(state?.recData?.topIngredients ?? []);
     const [loading, setLoading] = useState(!state?.recData);
-
+    
     const firstName = localStorage.getItem('firstName') || 'there';
     const lastName = localStorage.getItem('lastName') || '';
 
+    const [summary, setSummary] = useState('');
+    useEffect(() => {
+      const fetchSummary = async () => {
+        try {
+          const response = await fetch('http://localhost:5000/openai/generate-summary', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              concerns: topSkinConcerns.map(c => getTagName(c.tagId))
+            })
+          });
+
+          const data = await response.json();
+          setSummary(data.summary);
+        } catch (err) {
+          console.error('Failed to fetch summary', err);
+        }
+      };
+
+      if (topSkinConcerns.length > 0) {
+        fetchSummary();
+      }
+    }, [topSkinConcerns]);
+    
     const goToHome = () => {
         navigate('/home', { state: {
             firstName, 
@@ -151,7 +177,7 @@ function Result() {
           {/* Content */}
           <div className="flex-grow flex flex-col items-center pt-16 px-4 pb-32">
             <div className="w-full max-w-2xl space-y-8">
-              <h2 className="text-4xl font-playfair text-center text-[#547fac] mb-4">
+              <h2 className="text-4xl font-nunito text-center text-[#547fac] mb-4">
                 Hi {firstName}, here’s your skincare profile
               </h2>
 
@@ -168,6 +194,14 @@ function Result() {
                 ))}
               </div>
             </div>
+
+              {/* Summary below skin concerns */}
+              {summary && (
+                <div >
+                  <h3 className="text-xl font-semibold mb-2">What this says about your skin</h3>
+                  <p className="text-gray-700 whitespace-pre-line">{summary}</p>
+                </div>
+              )}
 
               {/* Product Picks */}
               <div>
