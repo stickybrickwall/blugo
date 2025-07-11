@@ -50,7 +50,7 @@ function Login() {
             />
             {/* Foreground Content */}
             <div className="relative z-10 flex flex-col items-center justify-center">
-                <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-full max-w-[400px] pt-12" />
+                <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-full max-w-[400px] pt-4" />
                 <div className="bg-white rounded-xl mt-8 p-6 shadow-md w-full max-w-sm">
                     <h2 className="text-[#547fac] font-semibold text-center tracking-widest font-[Nunito] text-1xl mb-4">
                         Log In to Existing Account

@@ -125,7 +125,7 @@ function Result() {
     }
 
     return (
-        <div className="min-h-screen bg-background text-[#1f628e] font-poppins flex flex-col">
+        <div className="relative min-h-screen bg-background text-[#1f628e] font-poppins flex flex-col">
           {/*Background Image Layer */}
         <div 
             className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-20 z-0"

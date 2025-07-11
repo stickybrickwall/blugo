@@ -44,7 +44,7 @@ function Signup() {
     };
 
     return (
-        <div className="w-full min-h-screen bg-background overflow-x-hidden flex flex-col items-center justify-center px-4 font-nunito">
+        <div className="relative w-full min-h-screen bg-background overflow-x-hidden flex flex-col items-center justify-center px-4 font-nunito">
             <div
                 className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-20 z-0"
                 aria-hidden="true"

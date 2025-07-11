@@ -175,7 +175,7 @@ function Quiz() {
     if (loading) return <p>Hang tight! We are generating your recommendations...</p>;
 
     return (
-    <div className="min-h-screen bg-background text-primary font-poppins flex flex-col">
+    <div className="relative min-h-screen bg-background text-primary font-poppins flex flex-col">
         {/*Background Image Layer */}
         <div 
             className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-20 z-0"
