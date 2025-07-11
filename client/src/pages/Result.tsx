@@ -132,6 +132,7 @@ function Result() {
               </div>
 
               {/* Skin Concerns */}
+              {topSkinConcerns.length > 0 && (
               <div>
                 <h3 className="text-2xl font-semibold mb-2">Top Skin Concerns:</h3>
                 <ul className="list-none pl-0 space-y-1">
@@ -142,8 +143,10 @@ function Result() {
                   ))}
                 </ul>
               </div>
+              )}
 
               {/* Top Ingredients */}
+              {topIngredients.length > 0 && (
               <div>
                 <h3 className="text-2xl font-semibold mb-2">Top Ingredients:</h3>
                 <ul className="list-none pl-0 space-y-1">
@@ -154,6 +157,7 @@ function Result() {
                   ))}
                 </ul>
               </div>
+              )}
             </div>
           </div>
         </div>

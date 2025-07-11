@@ -46,7 +46,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     // Write to user_tag_scores DB
     for (const [tagId, score] of Object.entries(tagScores)) {
-      console.log(`⬆️ Updating user_tag_scores for user ${userId}: Tag ${tagId} = ${score}`);
+      console.log(`Updating user_tag_scores for user ${userId}: Tag ${tagId} = ${score}`);
       await pool.query(`
         INSERT INTO user_tag_scores (user_id, tag_id, score, updated_at)
         VALUES ($1, $2, $3, NOW())

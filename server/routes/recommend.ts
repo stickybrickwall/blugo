@@ -142,10 +142,10 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       
     // Step 6: Save results
       await pool.query(`
-        INSERT INTO user_recommendations (user_id, recommendations)
-        VALUES ($1, $2)
+        INSERT INTO user_recommendations (user_id, recommendations, updated_at)
+        VALUES ($1, $2, NOW())
         ON CONFLICT (user_id)
-        DO UPDATE SET recommendations = EXCLUDED.recommendations
+        DO UPDATE SET recommendations = EXCLUDED.recommendations, updated_at = NOW()
       `, [userId, readableRecommendations]);
 
       res.json({ 

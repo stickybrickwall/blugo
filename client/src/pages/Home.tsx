@@ -10,7 +10,6 @@ function Home() {
         navigate('/quiz', { state: { firstName, lastName } });
     };
 
-    /*
     const handleViewPastResults = async () => {
         console.log('View past results clicked');
         const token = localStorage.getItem('token');
@@ -20,10 +19,12 @@ function Home() {
                 return;
             }
             console.log('Token being sent:', token);
-            const res = await fetch('https://glowguide-lqx9.onrender.com/recommend/latest', {
+            const res = await fetch('http://localhost:5000/recommend/latest', {
             headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
+            console.log('Response status:', res.status);
+            console.log('Fetched data:', data);
 
             if (!res.ok || !data.recommendations) {
             alert('No past result found.');
@@ -31,14 +32,18 @@ function Home() {
             }
 
             navigate('/result', {
-            state: { firstName, lastName, recData: { recommendations: data.recommendations } }
+            state: { 
+                firstName: 'Test', 
+                lastName: 'User', 
+                recData: { recommendations: data.recommendations } 
+            }
             });
         } catch (err) {
             console.error(err);
             alert('Error retrieving past result');
         }
         };
-*/
+
     const handleLogout = () => {
         localStorage.clear();
         navigate('/');
@@ -57,6 +62,13 @@ function Home() {
                         className="bg-white text-[#1f628e] font-normal px-6 py-3 rounded-md hover:opacity-90 transition"
                     >
                         Take the Quiz
+                    </button>
+
+                    <button 
+                        onClick={handleViewPastResults}
+                        className="bg-white text-[#1f628e] font-normal px-6 py-3 rounded-md hover:opacity-90 transition"
+                    >
+                        View Past Results
                     </button>
 
                     <button 
@@ -101,6 +113,6 @@ function Home() {
         </div>
     );
 }
-//<button onClick={handleViewPastResults}>View Past Results</button>
+
 
 export default Home;
