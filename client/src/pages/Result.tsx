@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useReturnToHome  } from '../hooks/returnToHome';
 
 type Product = {
@@ -9,41 +10,90 @@ type Product = {
 
 type Recommendations = Record<string, Product>;
 
-type LocationState = {
-    firstName: string;
-    lastName: string;
-    recData: {
-        recommendations: Recommendations;
-        topSkinConcerns: {
-            tagId: number;
-            score: number;
-        }[];
-        topIngredients: {
-            ingredientId: number;
-            name: string;
-            score: number;
-        }[];
-    };
+type SkinConcern = {
+  tagId: number;
+  score: number;
+};
+
+type Ingredient = {
+  ingredientId: number;
+  name: string;
+  score: number;
 };
 
 function Result() {
     const navigate = useNavigate();
-    const location = useLocation();
-    const { firstName, lastName, recData } = (location.state || {}) as LocationState;
     const returnToHome = useReturnToHome();
 
-    const {
-        recommendations = {},
-        topSkinConcerns = [],
-        topIngredients = []
-    } = recData || {};
+    const { state } = useLocation() as {
+        state: { 
+            firstName?: string; 
+            lastName?: string; 
+            recData?: {
+                recommendations: Recommendations;
+                topSkinConcerns: SkinConcern[];
+                topIngredients: Ingredient[];
+            };
+        };
+    };
+
+    const [recommendations, setRecommendations] = useState<Recommendations | null>(state?.recData?.recommendations ?? null);
+    const [topSkinConcerns,   setTopSkinConcerns]   = useState<SkinConcern[]>(state?.recData?.topSkinConcerns ?? []);
+    const [topIngredients,    setTopIngredients]    = useState<Ingredient[]>(state?.recData?.topIngredients ?? []);
+    const [loading, setLoading] = useState(!state?.recData);
+
+    const firstName = localStorage.getItem('firstName') || 'there';
+    const lastName = localStorage.getItem('lastName') || '';
 
     const goToHome = () => {
         navigate('/home', { state: {
             firstName, 
-            lastName //goToHome should receive userId data too.
+            lastName 
         }});
     };
+
+    useEffect(() => {
+    if (state?.recData) return;
+
+    // Fallback: View past results
+    const fetchRecommendations = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('You must be logged in to view results.');
+        navigate('/');
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:5000/recommend/latest', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (!res.ok) {
+          throw new Error('Failed to fetch past results');
+        }
+
+        const data: {
+            recommendations: Recommendations;
+            topSkinConcerns: SkinConcern[];
+            topIngredients: Ingredient[];
+        } = await res.json();
+
+        setRecommendations(data.recommendations ?? null);
+        setTopSkinConcerns(data.topSkinConcerns ?? []);
+        setTopIngredients(data.topIngredients ?? []);
+    } catch (err) {
+        console.error(err);
+        alert('Something went wrong.');
+        navigate('/home');
+    } finally {
+        setLoading(false);
+    }
+};
+
+    fetchRecommendations();
+  }, [state, navigate]);
 
     const TAG_NAMES: Record<number, string> = {
         1: 'Dry skin',
@@ -59,7 +109,11 @@ function Result() {
         11: "Damaged skin barrier",
         12: "Aging"
     };
-    const getTagName = (id: number) => TAG_NAMES[id] || `Tag ${id}`;
+    const getTagName = (id: number) => TAG_NAMES[id] ?? `Tag ${id}`;
+
+    if (loading) {
+    return <div className="p-8">Loading...</div>;
+  }
 
     if (!recommendations) {
         return (
