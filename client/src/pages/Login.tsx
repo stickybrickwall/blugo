@@ -22,6 +22,8 @@ function Login() {
 
             if (res.ok) {
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('firstName', data.firstName);
+                localStorage.setItem('lastName', data.lastName);
 
                 navigate('/home', {
                     state: {
@@ -40,15 +42,15 @@ function Login() {
     };
 
     return (
-        <div className="relative w-full min-h-screen overflow-x-hidden font-poppins text-primary">
+        <div className="w-full min-h-screen bg-background overflow-x-hidden flex flex-col items-center justify-center px-4 relative font-nunito">
             {/* Background Image Layer */}
             <div
-                className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-30 z-0"
+                className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-20 z-0"
                 aria-hidden="true"
             />
             {/* Foreground Content */}
-            <div className="relative z-10 flex flex-col items-center min-h-screen px-4 pt-16">
-                <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-full max-w-[400px]" />
+            <div className="relative z-10 flex flex-col items-center justify-center">
+                <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-full max-w-[400px] pt-12" />
                 <div className="bg-white rounded-xl mt-8 p-6 shadow-md w-full max-w-sm">
                     <h2 className="text-[#547fac] font-semibold text-center tracking-widest font-[Nunito] text-1xl mb-4">
                         Log In to Existing Account

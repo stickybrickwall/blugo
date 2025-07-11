@@ -10,35 +10,12 @@ function Home() {
         navigate('/quiz', { state: { firstName, lastName } });
     };
 
-    /*
-    const handleViewPastResults = async () => {
-        console.log('View past results clicked');
-        const token = localStorage.getItem('token');
-        try {
-            if (!token) {
-                alert('User not logged in');
-                return;
-            }
-            console.log('Token being sent:', token);
-            const res = await fetch('https://glowguide-lqx9.onrender.com/recommend/latest', {
-            headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+    const handleViewPastResults = () => {
+        navigate('/result', {
+            state: { firstName, lastName }
+        });
+    };
 
-            if (!res.ok || !data.recommendations) {
-            alert('No past result found.');
-            return;
-            }
-
-            navigate('/result', {
-            state: { firstName, lastName, recData: { recommendations: data.recommendations } }
-            });
-        } catch (err) {
-            console.error(err);
-            alert('Error retrieving past result');
-        }
-        };
-*/
     const handleLogout = () => {
         localStorage.clear();
         navigate('/');
@@ -47,7 +24,7 @@ function Home() {
     return (
         <div className="min-h-screen bg-background text-primary font-poppins">
             {/* NAVBAR */}
-            <nav className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
+            <nav className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md font-nunito">
                 <div className="flex items-center">
                     <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-[150px]" />
                 </div>
@@ -57,6 +34,13 @@ function Home() {
                         className="bg-white text-[#1f628e] font-normal px-6 py-3 rounded-md hover:opacity-90 transition"
                     >
                         Take the Quiz
+                    </button>
+
+                    <button 
+                        onClick={handleViewPastResults}
+                        className="bg-white text-[#1f628e] font-normal px-6 py-3 rounded-md hover:opacity-90 transition"
+                    >
+                        View Past Results
                     </button>
 
                     <button 
@@ -101,6 +85,6 @@ function Home() {
         </div>
     );
 }
-//<button onClick={handleViewPastResults}>View Past Results</button>
+
 
 export default Home;

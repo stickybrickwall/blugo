@@ -140,13 +140,22 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       }));
       
       
-    // Step 6: Save results
+    // Step 7: Save results
       await pool.query(`
-        INSERT INTO user_recommendations (user_id, recommendations)
-        VALUES ($1, $2)
+        INSERT INTO user_recommendations (user_id, recommendations, skin_concerns, ingredients, updated_at)
+        VALUES ($1, $2::jsonb, $3::jsonb, $4::jsonb, NOW())
         ON CONFLICT (user_id)
-        DO UPDATE SET recommendations = EXCLUDED.recommendations
-      `, [userId, readableRecommendations]);
+        DO UPDATE SET 
+          recommendations = EXCLUDED.recommendations, 
+          skin_concerns = EXCLUDED.skin_concerns,
+          ingredients = EXCLUDED.ingredients,
+          updated_at = NOW();
+      `, [
+          userId, 
+          JSON.stringify(readableRecommendations),
+          JSON.stringify(skinConcernScores),
+          JSON.stringify(topIngredientsWithNames),
+        ]);
 
       res.json({ 
         recommendations: readableRecommendations,
@@ -165,16 +174,22 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
   (async() => {
   try {
     const userId = req.user?.id;
-    const result = await pool.query(`
-      SELECT recommendations FROM user_recommendations
+    const { rows } = await pool.query(`
+      SELECT 
+        recommendations, 
+        skin_concerns AS "topSkinConcerns", 
+        ingredients AS "topIngredients"
+      FROM user_recommendations
       WHERE user_id = $1
     `, [userId]);
 
-    if (result.rows.length === 0) {
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'No recommendations found' });
     }
 
-    res.json({ recommendations: result.rows[0].recommendations });
+    const { recommendations, topSkinConcerns, topIngredients } = rows[0];
+
+    res.json({ recommendations, topSkinConcerns, topIngredients });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch past recommendations' });

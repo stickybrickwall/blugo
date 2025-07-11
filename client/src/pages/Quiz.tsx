@@ -178,19 +178,19 @@ function Quiz() {
     <div className="min-h-screen bg-background text-primary font-poppins flex flex-col">
         {/*Background Image Layer */}
         <div 
-            className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-30 z-0"
+            className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-20 z-0"
             aria-hidden="true"
         />
         {/* Foreground Content */}
         <div className="relative z-10 flex flex-col min-h-screen">
             {/* NAVBAR */}
-                <nav className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
+                <nav className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md font-nunito">
                     <div className="flex items-center">
                         <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-[150px]" />
                     </div>
                     <div className="flex gap-4">
                         <button
-                        onClick={() => returnToHome(firstName, lastName)}
+                        onClick={() => returnToHome()}
                         className="bg-white text-[#1f628e] font-normal px-6 py-3 rounded-md hover:opacity-90 transition"
                         >
                         Home
