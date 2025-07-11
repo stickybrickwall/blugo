@@ -74,7 +74,7 @@ function Home() {
                 style={{ backgroundImage: "url('./skincare.jpg')" }}
             >
                 <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center px-4 gap-8">
-                    <h1 className="text-white text-4xl md:text-6xl font-light tracking-wide">
+                    <h1 className="text-white text-5xl font-playfair md:text-6xl tracking-wide">
                         Welcome, {firstName} {lastName}
                     </h1>
 
@@ -92,9 +92,9 @@ function Home() {
 
                     <button
                         onClick={goToQuiz}
-                        className="bg-white text-[#1f628e] font-normal text-lg px-6 py-3 rounded-md hover:opacity-90 transition"
+                        className="border text-white rounded-xl font-normal text-lg px-6 py-3 rounded-md hover:opacity-90 transition"
                     >
-                        Take the Quiz Now!
+                        Take the Quiz
                     </button>
                 </div>
             </section>

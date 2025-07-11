@@ -176,65 +176,73 @@ function Quiz() {
 
     return (
     <div className="min-h-screen bg-background text-primary font-poppins flex flex-col">
-    {/* NAVBAR */}
-        <nav className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
-            <div className="flex items-center">
-                <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-[150px]" />
-            </div>
-            <div className="flex gap-4">
-                <button
-                onClick={() => returnToHome(firstName, lastName)}
-                className="bg-white text-[#1f628e] font-normal px-6 py-3 rounded-md hover:opacity-90 transition"
-                >
-                Home
-                </button>
-            </div>
-        </nav>
-        
-    {/* QUIZ CONTENT */}
-    <div className="flex-grow flex flex-col items-center pt-24 px-4 pb-32">
-    {/* Question */}
-        <h2 className="text-2xl md:text-3xl font-light text-[#547fac] text-center mb-8">
-            {q.question}
-        </h2>
+        {/*Background Image Layer */}
+        <div 
+            className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-30 z-0"
+            aria-hidden="true"
+        />
+        {/* Foreground Content */}
+        <div className="relative z-10 flex flex-col min-h-screen">
+            {/* NAVBAR */}
+                <nav className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md">
+                    <div className="flex items-center">
+                        <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-[150px]" />
+                    </div>
+                    <div className="flex gap-4">
+                        <button
+                        onClick={() => returnToHome(firstName, lastName)}
+                        className="bg-white text-[#1f628e] font-normal px-6 py-3 rounded-md hover:opacity-90 transition"
+                        >
+                        Home
+                        </button>
+                    </div>
+                </nav>
+                
+            {/* QUIZ CONTENT */}
+            <div className="flex-grow flex flex-col items-center pt-16 px-4 pb-32">
+            {/* Question */}
+                <h2 className="text-2xl md:text-3xl font-light text-[#547fac] text-center mb-8">
+                    {q.question}
+                </h2>
 
-    {/* Options */}
-            <div className="flex flex-col gap-4 w--96">
-                {q.options.map((option) => (
-                <button
-                    key={option}
-                    onClick={() => handleSelect(option)}
-                    className={`w-96 px-6 py-3 rounded-lg border text-white text-center whitespace-nowrap transition break-words ${
-                    selectedAnswer === option
-                        ? 'bg-[#1f628e] border-[#1f628e]'
-                        : 'bg-[#aab5bd] border-gray-300 hover:opacity-90'
-                    }`}
-                >
-                    {option}
-                </button>
-                ))}
+            {/* Options */}
+                    <div className="flex flex-col gap-4 w--96">
+                        {q.options.map((option) => (
+                        <button
+                            key={option}
+                            onClick={() => handleSelect(option)}
+                            className={`w-96 px-6 py-3 rounded-lg border text-white text-center whitespace-nowrap transition break-words ${
+                            selectedAnswer === option
+                                ? 'bg-[#1f628e] border-[#1f628e]'
+                                : 'bg-[#aab5bd] border-gray-300 hover:opacity-90'
+                            }`}
+                        >
+                            {option}
+                        </button>
+                        ))}
+                    </div>
             </div>
-    </div>
 
-    {/* Navigation buttons */}
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex gap-12">
-            <button
-                onClick={handlePrevious}
-                disabled={current === 0}
-                className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60"
-            >
-                Previous
-            </button>
+            {/* Navigation buttons */}
+                <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex gap-12">
+                    <button
+                        onClick={handlePrevious}
+                        disabled={current === 0}
+                        className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60"
+                    >
+                        Previous
+                    </button>
 
-            <button
-                onClick={handleNext}
-                disabled={!selectedAnswer}
-                className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60"
-            >
-                {current === questions.length - 1 ? 'View Results' : 'Next'}
-            </button>
+                    <button
+                        onClick={handleNext}
+                        disabled={!selectedAnswer}
+                        className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60"
+                    >
+                        {current === questions.length - 1 ? 'View Results' : 'Next'}
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
 );
 }
 

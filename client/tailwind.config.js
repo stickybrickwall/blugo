@@ -6,7 +6,7 @@ export default {
     "./src/pages/Signup.tsx",
     "./src/pages/Home.tsx",
     "./src/pages/Quiz.tsx",
-    "./src/pages/Results.tsx"
+    "./src/pages/Result.tsx"
   ],
   theme: {
     extend: {
@@ -16,6 +16,7 @@ export default {
     },
     fontFamily: {
         nunito: ['"Nunito"', 'sans-serif', '"Quicksand"', '"Poppins"'],
+        playfair: ['"Playfair Display"', 'serif'],
     },
   },
   plugins: [],

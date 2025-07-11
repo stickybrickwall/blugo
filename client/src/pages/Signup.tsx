@@ -42,10 +42,9 @@ function Signup() {
     };
 
     return (
-        <div className="min-h-screen bg-background m-0 p-0 flex flex-col items-center justify-center">
-        <div className="flex flex-col items-center gap-6 px-4">
-        <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-full max-w-[400px]" />
-        <div className="bg-white rounded-xl mt-8 p-6 shadow-md w-full max-w-sm">
+        <div className="w-full min-h-screen bg-background overflow-x-hidden flex flex-col items-center justify-center px-4">
+        <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-full max-w-[400px] pt-12" />
+        <div className="bg-white rounded-xl mt-8 mb-12 p-6 shadow-md w-full max-w-sm">
             <h2 className="text-[#547fac] font-semibold text-center tracking-widest font-nunito text-1xl mb-4">
                 Create a New Account
             </h2>
@@ -93,7 +92,6 @@ function Signup() {
                     Already have an account? <Link to="/" className="text-[#1f628e] font-semibold underline">Log in here!</Link>
                 </p>
             </div>
-        </div>
         </div>
     );  
 }
