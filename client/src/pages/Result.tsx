@@ -90,9 +90,23 @@ function Result() {
           {/* Content */}
           <div className="flex-grow flex flex-col items-center pt-16 px-4 pb-32">
             <div className="w-full max-w-2xl space-y-8">
-              <h2 className="text-4xl font-semibold text-center text-[#547fac] mb-4">
+              <h2 className="text-4xl font-playfair text-center text-[#547fac] mb-4">
                 Hi {firstName}, here’s your skincare profile
               </h2>
+
+              {/* Skin Concerns */}
+              <div>
+                <h3 className="text-2xl font-semibold pb-4 mb-2">Top Skin Concerns:</h3>
+                <div className="flex flex-wrap  justify-center gap-2">
+                  {topSkinConcerns.map(({ tagId, score }) => (
+                  <span
+                    key={tagId}
+                    className="inline-block rounded-full bg-blue-100 text-blue-800 text-sm px-3 py-1 font-nunito">
+                    {getTagName(tagId) }
+                  </span>
+                ))}
+              </div>
+            </div>
 
               {/* Product Picks */}
               <div>
@@ -122,18 +136,6 @@ function Result() {
                     </p>
                   );
                 })}
-              </div>
-
-              {/* Skin Concerns */}
-              <div>
-                <h3 className="text-2xl font-semibold mb-2">Top Skin Concerns:</h3>
-                <ul className="list-none pl-0 space-y-1">
-                  {topSkinConcerns.map(({ tagId, score }) => (
-                    <li key={tagId}>
-                      {getTagName(tagId)}: {(score * 100).toFixed(1)}%
-                    </li>
-                  ))}
-                </ul>
               </div>
 
               {/* Top Ingredients */}
