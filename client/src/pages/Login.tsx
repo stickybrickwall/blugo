@@ -22,6 +22,8 @@ function Login() {
 
             if (res.ok) {
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('firstName', data.firstName);
+                localStorage.setItem('lastName', data.lastName);
 
                 navigate('/home', {
                     state: {

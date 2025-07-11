@@ -140,7 +140,7 @@ function Result() {
             </div>
             <div className="flex gap-4">
               <button
-                onClick={() => returnToHome(firstName, lastName)}
+                onClick={() => returnToHome()}
                 className="bg-white text-[#1f628e] font-normal px-6 py-3 rounded-md hover:opacity-90 transition"
               >
                 Home
