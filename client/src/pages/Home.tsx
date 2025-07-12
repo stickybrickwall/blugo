@@ -40,7 +40,7 @@ function Home() {
                         onClick={handleViewPastResults}
                         className="bg-white text-[#1f628e] font-normal px-6 py-3 rounded-md hover:opacity-90 transition"
                     >
-                        View Past Results
+                        My Skin Profile
                     </button>
 
                     <button 
@@ -76,7 +76,7 @@ function Home() {
 
                     <button
                         onClick={goToQuiz}
-                        className="border text-white rounded-xl font-normal text-lg px-6 py-3 rounded-md hover:opacity-90 transition"
+                        className="border text-white rounded-xl font-normal text-lg px-6 py-3 rounded-md hover:opacity-90 transition hover:scale-105"
                     >
                         Take the Quiz
                     </button>
