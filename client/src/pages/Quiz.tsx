@@ -199,7 +199,7 @@ function Quiz() {
                 </nav>
                 
             {/* QUIZ CONTENT */}
-            <div className="flex-grow flex flex-col items-center pt-16 px-4 pb-32">
+            <div className="flex-grow flex flex-col items-center justify-center px-4">
             {/* Question */}
                 <h2 className="text-2xl md:text-3xl font-light text-[#547fac] text-center mb-8">
                     {q.question}
@@ -214,7 +214,7 @@ function Quiz() {
                             className={`w-96 px-6 py-3 rounded-lg border text-white text-center whitespace-nowrap transition break-words ${
                             selectedAnswer === option
                                 ? 'bg-[#1f628e] border-[#1f628e]'
-                                : 'bg-[#aab5bd] border-gray-300 hover:opacity-90'
+                                : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
                             }`}
                         >
                             {option}
@@ -228,7 +228,7 @@ function Quiz() {
                     <button
                         onClick={handlePrevious}
                         disabled={current === 0}
-                        className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60"
+                        className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
                     >
                         Previous
                     </button>
@@ -236,7 +236,7 @@ function Quiz() {
                     <button
                         onClick={handleNext}
                         disabled={!selectedAnswer}
-                        className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60"
+                        className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
                     >
                         {current === questions.length - 1 ? 'View Results' : 'Next'}
                     </button>
