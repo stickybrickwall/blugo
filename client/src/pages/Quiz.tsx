@@ -96,6 +96,7 @@ function Quiz() {
     const navigate = useNavigate();
     const location = useLocation();
     const returnToHome = useReturnToHome();
+    const totalQuestions = questions.length;
 
     const { firstName, lastName } = location.state || {};
 
@@ -197,7 +198,7 @@ function Quiz() {
                         </button>
                     </div>
                 </nav>
-                
+            
             {/* QUIZ CONTENT */}
             <div className="flex-grow flex flex-col items-center justify-center px-4">
             {/* Question */}
@@ -224,7 +225,7 @@ function Quiz() {
             </div>
 
             {/* Navigation buttons */}
-                <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex gap-12">
+                <div className="fixed top-40 left-1/2 transform -translate-x-1/2 flex gap-12">
                     <button
                         onClick={handlePrevious}
                         disabled={current === 0}
@@ -240,6 +241,21 @@ function Quiz() {
                     >
                         {current === questions.length - 1 ? 'View Results' : 'Next'}
                     </button>
+                </div>
+            
+            {/* Progress Bar */}
+                <div className="fixed bottom-[2rem] left-0 w-full z-50 px-4 py-2">
+                    <div className="max-w-xl mx-auto text-center">
+                        <div className="w-full bg-gray-300 rounded-full h-1 mb-4">
+                            <div
+                            className="bg-[#1f628e] h-1 rounded-full transition-all duration-300"
+                            style={{ width: `${((current + 1) / totalQuestions) * 100}%` }}
+                            ></div>
+                        </div>
+                        <p className="text-sm mb-2">
+                            Question {current + 1} of {totalQuestions}
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
