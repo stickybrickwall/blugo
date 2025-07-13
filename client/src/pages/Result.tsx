@@ -49,20 +49,23 @@ function Result() {
     useEffect(() => {
       const fetchSummary = async () => {
         try {
-          const response = await fetch('http://localhost:5000/openai/generate-summary', {
+          const token = localStorage.getItem('token')
+          const response = await fetch('http://localhost:5000/summary/generate-summary', {
             method: 'POST',
             headers: {
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              concerns: topSkinConcerns.map(c => getTagName(c.tagId))
-            })
+            }
           });
 
           const data = await response.json();
-          setSummary(data.summary);
+          if (response.ok) {
+            setSummary(data.summary);
+          } else {
+            console.error('Summary ftech error:', data.error);
+          }
         } catch (err) {
-          console.error('Failed to fetch summary', err);
+          console.error('Failed to fetch summary:', err);
         }
       };
 
