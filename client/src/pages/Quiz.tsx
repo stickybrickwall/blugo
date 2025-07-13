@@ -98,22 +98,25 @@ function Quiz() {
     const returnToHome = useReturnToHome();
     const totalQuestions = questions.length;
 
+    const q = questions[current];
+    const selectedAnswer = answers[q.question];
+
     const { firstName, lastName } = location.state || {};
 
     const handleSelect = (option: string) => {
+        // 1. Record the answer
         setAnswers((prev) => ({
             ...prev,
             [questions[current].question]: option
         }));
-    };
 
-    const handleNext = () => {
+        // 2. Automatically move to next question
         if (current + 1 < questions.length) {
-            setCurrent(current + 1);
-        } else {
-            submitQuiz();
+            setTimeout(() => {
+                setCurrent(current + 1);
+            }, 500);
         }
-    }
+    };
     
     const handlePrevious = () => {
         if (current > 0) {
@@ -170,9 +173,6 @@ function Quiz() {
     }
     };
 
-    const q = questions[current];
-    const selectedAnswer = answers[q.question];
-
     if (loading) return <p>Hang tight! We are generating your recommendations...</p>;
 
     return (
@@ -226,21 +226,26 @@ function Quiz() {
 
             {/* Navigation buttons */}
                 <div className="fixed top-40 left-1/2 transform -translate-x-1/2 flex gap-12">
-                    <button
-                        onClick={handlePrevious}
-                        disabled={current === 0}
-                        className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
-                    >
-                        Previous
-                    </button>
-
-                    <button
-                        onClick={handleNext}
-                        disabled={!selectedAnswer}
-                        className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
-                    >
-                        {current === questions.length - 1 ? 'View Results' : 'Next'}
-                    </button>
+                    {/*Show Previous button only if not on first question */}
+                    {current > 0 && (
+                        <button
+                            onClick={handlePrevious}
+                            disabled={current === 0}
+                            className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
+                        >
+                            Previous
+                        </button>
+                    )}
+                
+                    {/* Show Submit button onlt on the last question */}
+                    {current === questions.length - 1 && (
+                        <button
+                            onClick={submitQuiz}
+                            className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
+                        >
+                            View Results
+                        </button>
+                    )}
                 </div>
             
             {/* Progress Bar */}
