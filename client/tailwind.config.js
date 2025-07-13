@@ -17,6 +17,7 @@ export default {
     fontFamily: {
         nunito: ['"Nunito"', 'sans-serif', '"Quicksand"', '"Poppins"'],
         playfair: ['"Playfair Display"', 'serif'],
+        cormorant: ['"Cormorant Garamond"', 'serif'],
     },
   },
   plugins: [],

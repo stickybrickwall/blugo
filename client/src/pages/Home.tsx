@@ -58,25 +58,25 @@ function Home() {
                 style={{ backgroundImage: "url('./skincare.jpg')" }}
             >
                 <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center px-4 gap-8">
-                    <h1 className="text-white text-5xl font-playfair md:text-6xl tracking-wide">
+                    <h1 className="text-white text-6xl font-cormorant md:text-6xl tracking-wide">
                         Welcome, {firstName} {lastName}
                     </h1>
 
-                    <div className="flex flex-col md:flex-col flex-wrap justify-center items-center gap-6">
-                    <p className="text-white text-lg md:text-2xl font-extralight leading-loose max-w-md">
+                    <div className="flex flex-col md:flex-col flex-wrap justify-center items-center gap-4">
+                    <p className="text-white text-lg md:text-1xl font-extralight leading-tight max-w-md">
                         400 products from 150+ trusted brands.
                     </p>
-                    <p className="text-white text-lg md:text-2xl font-extralight leading-loose max-w-md">
+                    <p className="text-white text-lg md:text-1xl font-extralight leading-tight max-w-md">
                         Matched uniquely to your skin profile.
                     </p>
-                    <p className="text-white text-lg md:text-2xl font-extralight leading-loose max-w-md">
+                    <p className="text-white text-lg md:text-1xl font-extralight leading-tight max-w-md">
                         No marketing gimmicks, just science.
                     </p>
                     </div>
 
                     <button
                         onClick={goToQuiz}
-                        className="border text-white rounded-xl font-normal text-lg px-6 py-3 rounded-md hover:opacity-90 transition hover:scale-105"
+                        className="border text-white rounded-xl font-nunito text-md px-6 py-3 rounded-md hover:opacity-90 transition hover:scale-105"
                     >
                         Take the Quiz
                     </button>
