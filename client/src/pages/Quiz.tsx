@@ -1,114 +1,63 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useReturnToHome } from '../hooks/returnToHome';
-
-const questions = [
-    { //Q1
-        question: "What is your age?",
-        options: ["Under 20", "20s", "30s", "40s", "50 and above"]
-    },
-    { //Q2
-        question: "How does your skin feel right after washing?",
-        options: ["Very dry and tight", "Dry and tight", "Tight but oily later", "Normal"]
-    },
-    { //Q3
-        question: "How oily does your skin feel by midday?",
-        options: ["Not oily", "Oily", "Very oily"]
-    },
-    { //Q4
-        question: "What is your top skin concern right now?",
-        options: [
-            "Acne and bumpiness",
-            "Dryness",
-            "Oiliness",
-            "Dark spots and dullness",
-            "Fine lines and wrinkles",
-            "Redness and irritation",
-            "Enlarged pores"
-        ]
-    },
-    { //Q5
-        question: "Do you experience frequent clogged pores, blackheads or enlarged pores?",
-        options: ["Yes", "No"]
-    },
-    { //Q6
-        question: "Do you often experience flaking, roughness or tightness?",
-        options: ["Yes", "No"]
-    },
-    { //Q7
-        question: "Do you often experience redness or sensitivity to new products?",
-        options: ["Yes", "No"]
-    },
-    { //Q8
-        question: "Do you have any visible dark spots or uneven skin tone?",
-        options: ["Yes", "No"]
-    },
-    { //Q9
-        question: "Do you experience frequent breakouts or acne?",
-        options: ["Yes", "No"]
-    },
-    { //Q10
-        question: "Do you notice fine lines or loss of firmness?",
-        options: ["Yes", "No"]
-    },
-    { //Q11
-        question: "How much time do you spend outdoors daily?",
-        options: ["< 1 hour", "1 - 2 hours", "2 - 4 hours", "4 + hours"]
-    },
-    { //Q12
-        question: "What is the climate like where you live?",
-        options: [
-            "Humid",
-            "Balanced",
-            "Dry",
-            "I'm often in indoors, air-conditioned spaces"
-        ]
-    },
-    { //Q13
-        question: "How often do you wear makeup?",
-        options: [
-            "Rarely or never",
-            "A few times a week",
-            "Daily (light makeup)",
-            "Daily (heavy makeup)"
-        ]
-    },
-    { //Q14
-        question: "How would you describe your sleep habits?",
-        options: [
-            "I sleep well and regularly",
-            "I sleep okay but not always consistently",
-            "I often sleep too little or feel tired",
-            "My sleep schedule is very irregular or disrupted"
-        ]
-    },
-    { //Q15
-    question: "What is your budget per product?",
-    options: ["< $30", "$30 - $60", "> $60"]
-    }
-];
+import { supabase } from '../../supabaseClient';
 
 function Quiz() {
+    const [questions, setQuestions] = useState<any[]>([]);
+    const [answersByQuestion, setAnswersByQuestion] = useState<Record<number, any[]>>({});
+    const [answers, setAnswers] = useState<{ question_id: number; answer_id: number }[]>([]);
     const [current, setCurrent] = useState(0);
-    const [answers, setAnswers] = useState<{ [question:string]: string }>({});
+    const [loadingQuestions, setLoadingQuestions] = useState(true);
     const [loading, setLoading] = useState(false);
     
     const navigate = useNavigate();
     const location = useLocation();
     const returnToHome = useReturnToHome();
-    const totalQuestions = questions.length;
-
-    const q = questions[current];
-    const selectedAnswer = answers[q.question];
-
+    
     const { firstName, lastName } = location.state || {};
 
-    const handleSelect = (option: string) => {
+    useEffect(() => {
+        const fetchQuizData = async () => {
+        const { data: questionsData, error: qError } = await supabase
+            .from('questions')
+            .select('*')
+            .order('id', { ascending: true });
+
+        const { data: answersData, error: aError } = await supabase
+            .from('answers')
+            .select('*');
+
+        if (qError || aError) {
+            console.error('Failed to fetch quiz data:', qError || aError);
+            return;
+        }
+
+        const grouped = (answersData || []).reduce((acc, answer) => {
+            const qid = answer.question_id;
+            acc[qid] = acc[qid] || [];
+            acc[qid].push(answer);
+            return acc;
+        }, {} as Record<number, any[]>);
+
+        setQuestions(questionsData || []);
+        setAnswersByQuestion(grouped);
+        setLoadingQuestions(false);
+        };
+
+        fetchQuizData();
+    }, []);
+
+    const totalQuestions = questions.length;
+    const q = questions[current];
+    const selectedAnswer = answers.find(r => r.question_id === q?.id)?.answer_id;
+
+    const handleSelect = (question_id: number, answer_id : number) => {
         // 1. Record the answer
-        setAnswers((prev) => ({
-            ...prev,
-            [questions[current].question]: option
-        }));
+        setAnswers(prev => {
+            const filtered = prev.filter(r => r.question_id !== question_id);
+            return [...filtered, { question_id, answer_id }];     
+       });   
 
         // 2. Automatically move to next question
         if (current + 1 < questions.length) {
