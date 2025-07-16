@@ -152,25 +152,72 @@ function Quiz() {
             <div className="flex-grow flex flex-col items-center justify-center px-4">
             {/* Question */}
                 <h2 className="text-2xl md:text-3xl font-light text-[#547fac] text-center mb-8">
-                    {q.question}
+                    {q?.text}
                 </h2>
+            
+            {/* OPTIONS */}
 
-            {/* Options */}
-                    <div className="flex flex-col gap-4 w--96">
-                        {q.options.map((option) => (
+            {/* Options for 'single' type questions */}
+            {q?.question_type === 'single' && (
+                <div className="flex flex-col gap-4 w--96">
+                    {answersByQuestion[q.id]?.map((option: any) => (
+                    <button
+                        key={option.id}
+                        onClick={() => handleSelect(q.id, option.id)}
+                        className={`w-96 px-6 py-3 rounded-lg border text-white text-center whitespace-nowrap transition break-words ${
+                        answers.find((a) => a.question_id === q.id)?.answer_id === option.id
+                            ? 'bg-[#1f628e] border-[#1f628e]'
+                            : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
+                        }`}
+                    >
+                        {option.answer_text}
+                    </button>
+                    ))}
+                </div>
+                )}
+
+            {/* Options for 'scale' type questions */}
+            {q?.question_type === 'scale' && (
+            <div className="flex flex-row gap-4">
+                {[1, 2, 3, 4, 5].map((val) => (
+                <button
+                    key={val}
+                    onClick={() => handleSelect(q.id, null, val)}
+                    className={`w-12 h-12 rounded-full border text-white font-light text-lg transition ${
+                    answers.find((a) => a.question_id === q.id)?.scale_value === val
+                        ? 'bg-[#1f628e] border-[#1f628e]'
+                        : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
+                    }`}
+                >
+                    {val}
+                </button>
+                ))}
+            </div>
+            )}
+
+            {/* Options for 'multi' type questions */}
+            {q?.question_type === 'multi' && (
+                <div className="flex flex-col gap-4 w--96">
+                    {answersByQuestion[q.id]?.map((option: any) => {
+                    const selected = answers.some(
+                        (a) => a.question_id === q.id && a.answer_id === option.id
+                    );
+                    return (
                         <button
-                            key={option}
-                            onClick={() => handleSelect(option)}
+                            key={option.id}
+                            onClick={() => handleMultiSelect(q.id, option.id)}
                             className={`w-96 px-6 py-3 rounded-lg border text-white text-center whitespace-nowrap transition break-words ${
-                            selectedAnswer === option
-                                ? 'bg-[#1f628e] border-[#1f628e]'
+                                selected
+                                    ? 'bg-[#1f628e] border-[#1f628e]'
                                 : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
                             }`}
                         >
-                            {option}
+                            {option.answer_text}
                         </button>
-                        ))}
-                    </div>
+                    );
+                })}
+                </div>
+                )}
             </div>
 
             {/* Navigation buttons */}
@@ -213,7 +260,7 @@ function Quiz() {
                 </div>
             </div>
         </div>
-);
+    );  
 }
 
 export default Quiz;
