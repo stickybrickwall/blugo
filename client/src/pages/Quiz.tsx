@@ -3,10 +3,15 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useReturnToHome } from '../hooks/returnToHome';
 import { supabase } from '../../supabaseClient';
 
+type Answer =
+    | { question_id: number; type: 'single'; answer_id: number }
+    | { question_id: number; type: 'multi'; answer_ids: number[] }
+    | { question_id: number; type: 'scale'; scale_value: number };
+
 function Quiz() {
     const [questions, setQuestions] = useState<any[]>([]);
+    const [answers, setAnswers] = useState<Answer[]>([]);
     const [answersByQuestion, setAnswersByQuestion] = useState<Record<number, any[]>>({});
-    const [answers, setAnswers] = useState<{ question_id: number; answer_id: number }[]>([]);
     const [current, setCurrent] = useState(0);
     const [loadingQuestions, setLoadingQuestions] = useState(true);
     const [loading, setLoading] = useState(false);
@@ -16,6 +21,7 @@ function Quiz() {
     const returnToHome = useReturnToHome();
     
     const { firstName, lastName } = location.state || {};
+
 
     useEffect(() => {
         const fetchQuizData = async () => {
@@ -50,76 +56,147 @@ function Quiz() {
 
     const totalQuestions = questions.length;
     const q = questions[current];
-    const selectedAnswer = answers.find(r => r.question_id === q?.id)?.answer_id;
+    const selectedAnswer = answers.find(r => r.question_id === q?.id);
 
-    const handleSelect = (question_id: number, answer_id : number) => {
-        // 1. Record the answer
+    // Helps determine if user can select 'next' button, 3 options have to be selected for 'multi' type questions
+    const canProceed =
+        q?.question_type === 'multi'
+            ? selectedAnswer?.type === 'multi' && selectedAnswer.answer_ids.length === 3
+            : selectedAnswer !== undefined;
+            
+    const handleSelect = (
+        question_id: number,
+        type: 'single' | 'scale',
+        value: number
+        ) => {
         setAnswers(prev => {
             const filtered = prev.filter(r => r.question_id !== question_id);
-            return [...filtered, { question_id, answer_id }];     
-       });   
 
-        // 2. Automatically move to next question
-        if (current + 1 < questions.length) {
-            setTimeout(() => {
-                setCurrent(current + 1);
-            }, 500);
-        }
+            if (type === 'single') {
+                return [...filtered, { question_id, type: 'single', answer_id: value }];
+            } else if (type === 'scale') {
+                return [...filtered, { question_id, type: 'scale', scale_value: value }];
+            }
+            return prev;
+        });
     };
-    
+
+    // Handle questions of type 'multi'
+    const handleMultiSelect = (question_id: number, answer_id: number) => {
+        setAnswers(prev => {
+            const existing = prev.find(
+                r => r.question_id === question_id && r.type === 'multi'
+            ) as { question_id: number; type: 'multi'; answer_ids: number[] } | undefined;
+
+            const filtered = prev.filter(r => r.question_id !== question_id);
+
+            if (existing) {
+                const alreadySelected = existing.answer_ids.includes(answer_id);
+
+                if (alreadySelected) {
+                    const newIds = existing.answer_ids.filter(id => id !== answer_id);
+                    return [...filtered, { question_id, type: 'multi', answer_ids: newIds }];
+                } else {
+                // Only allow up to 3 selections
+                    if (existing.answer_ids.length >= 3) {
+                        return prev; // Do nothing if limit reached
+                    }
+                    return [...filtered, { question_id, type: 'multi', answer_ids: [...existing.answer_ids, answer_id] }];
+                }
+            } else {
+            // First selection
+                return [...filtered, { question_id, type: 'multi', answer_ids: [answer_id] }];
+            }
+        });
+    };
+        
     const handlePrevious = () => {
         if (current > 0) {
             setCurrent(current - 1);
         }
     };
 
+    const handleNext = () => {
+        if (current < totalQuestions - 1) {
+            setCurrent(current + 1);
+        }
+    };
+
     const submitQuiz = async() => {
-    setLoading(true);
-    try {
-        const token = localStorage.getItem('token');
+        setLoading(true);
         
-        const res = await fetch('http://localhost:5000/quiz', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ responses: answers })
-        });
-        console.log('received response from server', res);
+        try {
+            const token = localStorage.getItem('token');
 
-        const data = await res.json();
-        if (!res.ok) {
-            alert('Failed to submit quiz: ' + data.error);
-            setLoading(false);
-            return;
-        }
-        console.log('Quiz saved');
+            const responses: Record<string, string | string[] | number> = {};
 
-        const recRes = await fetch('http://localhost:5000/recommend/recommendations', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+            for (const ans of answers) {
+                const question = questions.find(q => q.id === ans.question_id);
+                if (!question) continue;
+
+                if (ans.type === 'single') {
+                    const option = answersByQuestion[question.id]?.find(o => o.id === ans.answer_id);
+                    if (option) responses[question.text] = option.answer_text;
+                }
+
+                else if (ans.type === 'scale') {
+                    responses[question.text] = ans.scale_value;
+                }
+
+                else if (ans.type === 'multi') {
+                    const selectedOptions = answersByQuestion[question.id]?.filter(o =>
+                    ans.answer_ids.includes(o.id)
+                    );
+                    if (selectedOptions?.length) {
+                    responses[question.text] = selectedOptions.map(o => o.answer_text);
+                    }
+                }
             }
-        });
+            
+            console.log('Formatted responses:', responses);
+            
+            const res = await fetch('http://localhost:5000/quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ responses })
+            });
+            console.log('received response from server', res);
 
-        const recData = await recRes.json();
+            const data = await res.json();
+            if (!res.ok) {
+                alert('Failed to submit quiz: ' + data.error);
+                setLoading(false);
+                return;
+            }
+            console.log('Quiz saved');
 
-        if (!recRes.ok) {
-            alert('Failed to generate recommendations: ' + recData.error);
+            const recRes = await fetch('http://localhost:5000/recommend/recommendations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const recData = await recRes.json();
+
+            if (!recRes.ok) {
+                alert('Failed to generate recommendations: ' + recData.error);
+                setLoading(false);
+                return;
+            }
+            
+            navigate('/result', { state: { firstName, lastName, recData } });
+
+        } catch (err) {
+            console.error(err);
+            alert('Something went wrong with submitting your quiz.');
+        } finally {
             setLoading(false);
-            return;
         }
-        
-        navigate('/result', { state: { firstName, lastName, recData } });
-
-    } catch (err) {
-        console.error(err);
-        alert('Something went wrong with submitting your quiz.');
-    } finally {
-        setLoading(false);
-    }
     };
 
     if (loading) return <p>Hang tight! We are generating your recommendations...</p>;
@@ -163,9 +240,9 @@ function Quiz() {
                     {answersByQuestion[q.id]?.map((option: any) => (
                     <button
                         key={option.id}
-                        onClick={() => handleSelect(q.id, option.id)}
+                        onClick={() => handleSelect(q.id, 'single', option.id)}
                         className={`w-96 px-6 py-3 rounded-lg border text-white text-center whitespace-nowrap transition break-words ${
-                        answers.find((a) => a.question_id === q.id)?.answer_id === option.id
+                        selectedAnswer?.type === 'single' && selectedAnswer.answer_id === option.id
                             ? 'bg-[#1f628e] border-[#1f628e]'
                             : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
                         }`}
@@ -182,9 +259,9 @@ function Quiz() {
                 {[1, 2, 3, 4, 5].map((val) => (
                 <button
                     key={val}
-                    onClick={() => handleSelect(q.id, null, val)}
+                    onClick={() => handleSelect(q.id, 'scale', val)}
                     className={`w-12 h-12 rounded-full border text-white font-light text-lg transition ${
-                    answers.find((a) => a.question_id === q.id)?.scale_value === val
+                    selectedAnswer?.type === 'scale' && selectedAnswer.scale_value === val
                         ? 'bg-[#1f628e] border-[#1f628e]'
                         : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
                     }`}
@@ -199,9 +276,7 @@ function Quiz() {
             {q?.question_type === 'multi' && (
                 <div className="flex flex-col gap-4 w--96">
                     {answersByQuestion[q.id]?.map((option: any) => {
-                    const selected = answers.some(
-                        (a) => a.question_id === q.id && a.answer_id === option.id
-                    );
+                    const selected = selectedAnswer?.type === 'multi' && selectedAnswer.answer_ids.includes(option.id);
                     return (
                         <button
                             key={option.id}
@@ -232,11 +307,20 @@ function Quiz() {
                             Previous
                         </button>
                     )}
-                
-                    {/* Show Submit button onlt on the last question */}
-                    {current === questions.length - 1 && (
+
+                    {/* Next or Submit */}
+                    {current < questions.length - 1 ? (
+                        <button
+                            onClick={handleNext}
+                            disabled={!canProceed}
+                            className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
+                        >
+                            Next
+                        </button>
+                    ) : (
                         <button
                             onClick={submitQuiz}
+                            disabled={!canProceed}
                             className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
                         >
                             View Results
