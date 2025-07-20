@@ -15,6 +15,7 @@ function Quiz() {
     const [current, setCurrent] = useState(0);
     const [loadingQuestions, setLoadingQuestions] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [canProceed, setCanProceed] = useState(false);
     
     const navigate = useNavigate();
     const location = useLocation();
@@ -22,6 +23,9 @@ function Quiz() {
     
     const { firstName, lastName } = location.state || {};
 
+    const totalQuestions = questions.length;
+    const q = questions[current];
+    const selectedAnswer = answers.find(r => r.question_id === q?.id);
 
     useEffect(() => {
         const fetchQuizData = async () => {
@@ -54,15 +58,28 @@ function Quiz() {
         fetchQuizData();
     }, []);
 
-    const totalQuestions = questions.length;
-    const q = questions[current];
-    const selectedAnswer = answers.find(r => r.question_id === q?.id);
+    useEffect(() => {
+        if (!q) {
+            setCanProceed(false);
+            return;
+        }
 
-    // Helps determine if user can select 'next' button, 3 options have to be selected for 'multi' type questions
-    const canProceed =
-        q?.question_type === 'multi'
-            ? selectedAnswer?.type === 'multi' && selectedAnswer.answer_ids.length === 3
-            : selectedAnswer !== undefined;
+        if (q.question_type === 'multi') {
+            setCanProceed(
+            selectedAnswer?.type === 'multi' && selectedAnswer.answer_ids.length === 3
+            );
+        } else if (q.question_type === 'single') {
+            setCanProceed(
+            selectedAnswer?.type === 'single' && selectedAnswer.answer_id != null
+            );
+        } else if (q.question_type === 'scale') {
+            setCanProceed(
+            selectedAnswer?.type === 'scale' && selectedAnswer.scale_value != null
+            );
+        } else {
+            setCanProceed(false);
+        }
+        }, [selectedAnswer, q]);
             
     const handleSelect = (
         question_id: number,
@@ -226,108 +243,115 @@ function Quiz() {
                 </nav>
             
             {/* QUIZ CONTENT */}
-            <div className="flex-grow flex flex-col items-center justify-center px-4">
-            {/* Question */}
-                <h2 className="text-2xl md:text-3xl font-light text-[#547fac] text-center mb-8">
-                    {q?.text}
-                </h2>
-            
-            {/* OPTIONS */}
+            <div className="flex-grow flex flex justify-center px-4 py-8 items-start">
+                <div className="w-full max-w-xl bg-white bg-opacity-90 backdrop-blur-sm p-8 rounded-2xl shadow-lg space-y-8 overflow-y-auto">
+                {/* Question */}
+                    <div className="min-h-[5rem] flex items-center justify-center text-center">
+                        <h2 className="text-xl md:text-3xl font-light text-[#547fac]">
+                            {q?.text}
+                        </h2>
+                    </div>
 
-            {/* Options for 'single' type questions */}
-            {q?.question_type === 'single' && (
-                <div className="flex flex-col gap-4 w--96">
-                    {answersByQuestion[q.id]?.map((option: any) => (
-                    <button
-                        key={option.id}
-                        onClick={() => handleSelect(q.id, 'single', option.id)}
-                        className={`w-96 px-6 py-3 rounded-lg border text-white text-center whitespace-nowrap transition break-words ${
-                        selectedAnswer?.type === 'single' && selectedAnswer.answer_id === option.id
-                            ? 'bg-[#1f628e] border-[#1f628e]'
-                            : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
-                        }`}
-                    >
-                        {option.answer_text}
-                    </button>
-                    ))}
-                </div>
-                )}
+                    {/* OPTIONS */}
 
-            {/* Options for 'scale' type questions */}
-            {q?.question_type === 'scale' && (
-            <div className="flex flex-row gap-4">
-                {[1, 2, 3, 4, 5].map((val) => (
-                <button
-                    key={val}
-                    onClick={() => handleSelect(q.id, 'scale', val)}
-                    className={`w-12 h-12 rounded-full border text-white font-light text-lg transition ${
-                    selectedAnswer?.type === 'scale' && selectedAnswer.scale_value === val
-                        ? 'bg-[#1f628e] border-[#1f628e]'
-                        : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
-                    }`}
-                >
-                    {val}
-                </button>
-                ))}
-            </div>
-            )}
-
-            {/* Options for 'multi' type questions */}
-            {q?.question_type === 'multi' && (
-                <div className="flex flex-col gap-4 w--96">
-                    {answersByQuestion[q.id]?.map((option: any) => {
-                    const selected = selectedAnswer?.type === 'multi' && selectedAnswer.answer_ids.includes(option.id);
-                    return (
-                        <button
-                            key={option.id}
-                            onClick={() => handleMultiSelect(q.id, option.id)}
-                            className={`w-96 px-6 py-3 rounded-lg border text-white text-center whitespace-nowrap transition break-words ${
-                                selected
+                    {/* Options for 'single' type questions */}
+                    {q?.question_type === 'single' && (
+                        <div className="flex flex-col gap-4 w-full">
+                            {answersByQuestion[q.id]?.map((option: any) => (
+                            <button
+                                key={option.id}
+                                onClick={() => handleSelect(q.id, 'single', option.id)}
+                                className={`w-full px-6 py-3 rounded-lg hover:scale-105 text-white text-center whitespace-nowrap transition break-words ${
+                                selectedAnswer?.type === 'single' && selectedAnswer.answer_id === option.id
                                     ? 'bg-[#1f628e] border-[#1f628e]'
+                                    : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
+                                }`}
+                            >
+                                {option.answer_text}
+                            </button>
+                            ))}
+                        </div>
+                        )}
+
+                    {/* Options for 'scale' type questions */}
+                    {q?.question_type === 'scale' && (
+                    <div className="flex flex-row gap-4 justify-center">
+                        {[1, 2, 3, 4, 5].map((val) => (
+                        <button
+                            key={val}
+                            onClick={() => handleSelect(q.id, 'scale', val)}
+                            className={`w-12 h-12 rounded-full border text-white font-light text-lg transition ${
+                            selectedAnswer?.type === 'scale' && selectedAnswer.scale_value === val
+                                ? 'bg-[#1f628e] border-[#1f628e]'
                                 : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
                             }`}
                         >
-                            {option.answer_text}
+                            {val}
                         </button>
-                    );
-                })}
+                        ))}
+                    </div>
+                    )}
+
+                    {/* Options for 'multi' type questions */}
+                    {q?.question_type === 'multi' && (
+                        <div className="flex flex-col gap-4 w-full">
+                            {answersByQuestion[q.id]?.map((option: any) => {
+                            const selected = selectedAnswer?.type === 'multi' && selectedAnswer.answer_ids.includes(option.id);
+                            return (
+                                <button
+                                    key={option.id}
+                                    onClick={() => handleMultiSelect(q.id, option.id)}
+                                    className={`w-full px-6 py-3 rounded-lg hover:scale-105 text-white text-center whitespace-nowrap transition break-words ${
+                                        selected
+                                            ? 'bg-[#1f628e] border-[#1f628e]'
+                                        : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
+                                    }`}
+                                >
+                                    {option.answer_text}
+                                </button>
+                            );
+                        })}
+                        </div>
+                        )}
+                    </div>
                 </div>
-                )}
             </div>
-
-            {/* Navigation buttons */}
-                <div className="fixed top-40 left-1/2 transform -translate-x-1/2 flex gap-12">
-                    {/*Show Previous button only if not on first question */}
-                    {current > 0 && (
-                        <button
-                            onClick={handlePrevious}
-                            disabled={current === 0}
-                            className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
-                        >
-                            Previous
-                        </button>
-                    )}
-
-                    {/* Next or Submit */}
-                    {current < questions.length - 1 ? (
-                        <button
-                            onClick={handleNext}
-                            disabled={!canProceed}
-                            className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
-                        >
-                            Next
-                        </button>
-                    ) : (
-                        <button
-                            onClick={submitQuiz}
-                            disabled={!canProceed}
-                            className="px-6 py-3 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105"
-                        >
-                            View Results
-                        </button>
-                    )}
-                </div>
             
+            {/* Navigation buttons */}
+                <div className="fixed bottom-0 left-0 bg-opacity-95 z-50 px-4 py-4 right-0">
+                    <div className="w-full max-w-xl mx-auto flex justify-between">
+                        {/* Previous button */}
+                        {current > 0 && (
+                            <button
+                                onClick={handlePrevious}
+                                    disabled={current === 0}
+                                    className="w-28 text-sm px-4 py-2 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform transform"
+                                >
+                                    Previous
+                                </button>
+                            )}
+
+                        {/* Next or Submit */}
+                            {current < questions.length - 1 ? (
+                                <button
+                                    onClick={handleNext}
+                                    disabled={!canProceed}
+                                    className="w-28 text-sm px-4 py-2 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform transform"
+                                >
+                                    Next
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={submitQuiz}
+                                    disabled={!canProceed}
+                                    className="w-32 text-sm px-4 py-2 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform"
+                                >
+                                    View Results
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
             {/* Progress Bar */}
                 <div className="fixed bottom-[2rem] left-0 w-full z-50 px-4 py-2">
                     <div className="max-w-xl mx-auto text-center">
@@ -343,7 +367,6 @@ function Quiz() {
                     </div>
                 </div>
             </div>
-        </div>
     );  
 }
 
