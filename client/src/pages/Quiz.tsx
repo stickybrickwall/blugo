@@ -243,7 +243,7 @@ function Quiz() {
                 </nav>
             
             {/* QUIZ CONTENT */}
-            <div className="flex-grow flex flex justify-center px-4 py-8 items-start">
+            <div className="flex-grow flex justify-center items-center px-4">
                 <div className="w-full max-w-xl bg-white bg-opacity-90 backdrop-blur-sm p-8 rounded-2xl shadow-lg space-y-8 overflow-y-auto">
                 {/* Question */}
                     <div className="min-h-[5rem] flex items-center justify-center text-center">
@@ -275,6 +275,7 @@ function Quiz() {
 
                     {/* Options for 'scale' type questions */}
                     {q?.question_type === 'scale' && (
+                    <>
                     <div className="flex flex-row gap-4 justify-center">
                         {[1, 2, 3, 4, 5].map((val) => (
                         <button
@@ -290,6 +291,14 @@ function Quiz() {
                         </button>
                         ))}
                     </div>
+
+                    {q.scale_labels && (
+                        <div className="flex justify-between text-sm text-gray-600 mt-2 px-2">
+                            <span>{q.scale_labels["1"]}</span>
+                            <span>{q.scale_labels["5"]}</span>
+                        </div>
+                        )}
+                    </> 
                     )}
 
                     {/* Options for 'multi' type questions */}
@@ -321,14 +330,17 @@ function Quiz() {
                 <div className="fixed bottom-0 left-0 bg-opacity-95 z-50 px-4 py-4 right-0">
                     <div className="w-full max-w-xl mx-auto flex justify-between">
                         {/* Previous button */}
-                        {current > 0 && (
+                        {current > 0 ? (
                             <button
                                 onClick={handlePrevious}
-                                    disabled={current === 0}
-                                    className="w-28 text-sm px-4 py-2 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform transform"
-                                >
-                                    Previous
-                                </button>
+                                disabled={current === 0}
+                                className="w-28 text-sm px-4 py-2 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform transform"
+                            >
+                                Previous
+                            </button>
+                            ) : (
+                            // Invisible placeholder to push "Next" to the right
+                            <div className="w-28" />
                             )}
 
                         {/* Next or Submit */}

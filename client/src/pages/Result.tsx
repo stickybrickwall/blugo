@@ -140,6 +140,13 @@ function Result() {
     };
     const getTagName = (id: number) => TAG_NAMES[id] ?? `Tag ${id}`;
 
+    const getSeverityLabel = (score: number): string => {
+      if (score >= 0.75) return "Very Severe";
+      if (score >= 0.5) return "Severe";
+      if (score >= 0.25) return "Moderate";
+      return "Mild";
+    };
+
     if (loading) {
     return <div className="p-8">Loading...</div>;
   }
@@ -189,11 +196,13 @@ function Result() {
                 <h3 className="text-2xl font-semibold pb-4 mb-2">Top Skin Concerns:</h3>
                 <div className="flex flex-wrap  justify-center gap-2">
                   {topSkinConcerns.map(({ tagId, score }) => (
-                  <span
+                  <div
                     key={tagId}
-                    className="inline-block rounded-full bg-blue-100 text-blue-800 text-sm px-3 py-1 font-nunito">
-                    {getTagName(tagId) }
-                  </span>
+                    className="inline-block rounded-full bg-blue-100 text-blue-800 items-center text-sm px-3 py-1 font-nunito">
+                    <span className="text-[#1f628e] font-bold block">{getTagName(tagId)}</span>
+                    <span className="text-gray-600 text-xs block">{getSeverityLabel(score)}
+                    </span>    
+                  </div>
                 ))}
               </div>
             </div>
@@ -217,13 +226,10 @@ function Result() {
                         Step {index + 1}: {cat.charAt(0).toUpperCase() + cat.slice(1)}
                       </h4>
                       <p>{rec.name}</p>
-                      <p className="text-sm text-gray-600">
-                        Match Score: {(rec.score ?? 0).toFixed(2)}
-                      </p>
                       <ul className="list-disc pl-6 text-sm mt-1">
-                        {Object.entries(rec.ingredients || {}).map(([ing, score]) => (
+                        {Object.entries(rec.ingredients || {}).map(([ing]) => (
                           <li key={ing}>
-                            {ing} ({score})
+                            {ing}
                           </li>
                         ))}
                       </ul>
@@ -241,9 +247,9 @@ function Result() {
               <div>
                 <h3 className="text-2xl font-semibold mb-2">Top Ingredients:</h3>
                 <ul className="list-none pl-0 space-y-1">
-                  {topIngredients.map(({ ingredientId, name, score }) => (
+                  {topIngredients.map(({ ingredientId, name }) => (
                     <li key={ingredientId}>
-                      {name}: {score.toFixed(2)}
+                      {name}
                     </li>
                   ))}
                 </ul>
