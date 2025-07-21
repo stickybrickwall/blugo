@@ -222,7 +222,7 @@ function Quiz() {
     <div className="relative min-h-screen bg-background text-primary font-poppins flex flex-col">
         {/*Background Image Layer */}
         <div 
-            className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-20 z-0"
+            className="absolute inset-0 bg-[url('/blugo/blue-gradient.jpg')] bg-cover bg-center opacity-20 z-0 pointer-events-none"
             aria-hidden="true"
         />
         {/* Foreground Content */}
@@ -243,7 +243,7 @@ function Quiz() {
                 </nav>
             
             {/* QUIZ CONTENT */}
-            <div className="flex-grow flex justify-center items-center px-4">
+            <div className="flex-grow flex justify-center items-start px-4 pt-12 overflow-y-auto pb-32">
                 <div className="w-full max-w-xl bg-white bg-opacity-90 backdrop-blur-sm p-8 rounded-2xl shadow-lg space-y-8 overflow-y-auto">
                 {/* Question */}
                     <div className="min-h-[5rem] flex items-center justify-center text-center">
@@ -261,10 +261,10 @@ function Quiz() {
                             <button
                                 key={option.id}
                                 onClick={() => handleSelect(q.id, 'single', option.id)}
-                                className={`w-full px-6 py-3 rounded-lg hover:scale-105 text-white text-center whitespace-nowrap transition break-words ${
+                                className={`w-full px-6 py-3 rounded-xl hover:scale-105 text-white text-center whitespace-nowrap transition break-words ${
                                 selectedAnswer?.type === 'single' && selectedAnswer.answer_id === option.id
-                                    ? 'bg-[#1f628e] border-[#1f628e]'
-                                    : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
+                                    ? 'bg-[#406485] border-[#406485]'
+                                    : 'bg-[#7e94a8] border-gray-300 hover:opacity-90 hover:scale-105'
                                 }`}
                             >
                                 {option.answer_text}
@@ -281,10 +281,10 @@ function Quiz() {
                         <button
                             key={val}
                             onClick={() => handleSelect(q.id, 'scale', val)}
-                            className={`w-12 h-12 rounded-full border text-white font-light text-lg transition ${
+                            className={`w-12 h-12 rounded-3xl border text-white font-light text-lg transition ${
                             selectedAnswer?.type === 'scale' && selectedAnswer.scale_value === val
-                                ? 'bg-[#1f628e] border-[#1f628e]'
-                                : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
+                                ? 'bg-[#406485] border-[#406485]'
+                                : 'bg-[#7e94a8] border-gray-300 hover:opacity-90 hover:scale-105'
                             }`}
                         >
                             {val}
@@ -293,7 +293,7 @@ function Quiz() {
                     </div>
 
                     {q.scale_labels && (
-                        <div className="flex justify-between text-sm text-gray-600 mt-2 px-2">
+                        <div className="flex justify-between text-sm text-gray-500 mt-2 px-2">
                             <span>{q.scale_labels["1"]}</span>
                             <span>{q.scale_labels["5"]}</span>
                         </div>
@@ -310,10 +310,10 @@ function Quiz() {
                                 <button
                                     key={option.id}
                                     onClick={() => handleMultiSelect(q.id, option.id)}
-                                    className={`w-full px-6 py-3 rounded-lg hover:scale-105 text-white text-center whitespace-nowrap transition break-words ${
+                                    className={`w-full px-6 py-3 rounded-xl hover:scale-105 text-white text-center whitespace-nowrap transition break-words ${
                                         selected
-                                            ? 'bg-[#1f628e] border-[#1f628e]'
-                                        : 'bg-[#aab5bd] border-gray-300 hover:opacity-90 hover:scale-105'
+                                            ? 'bg-[#406485] border-[#406485]'
+                                        : 'bg-[#7e94a8] border-gray-300 hover:opacity-90 hover:scale-105'
                                     }`}
                                 >
                                     {option.answer_text}
@@ -327,14 +327,14 @@ function Quiz() {
             </div>
             
             {/* Navigation buttons */}
-                <div className="fixed bottom-0 left-0 bg-opacity-95 z-50 px-4 py-4 right-0">
+                <div className="fixed bottom-4 left-0 bg-opacity-95 z-50 px-4 py-4 right-0 pointer-events-auto">
                     <div className="w-full max-w-xl mx-auto flex justify-between">
                         {/* Previous button */}
                         {current > 0 ? (
                             <button
                                 onClick={handlePrevious}
                                 disabled={current === 0}
-                                className="w-28 text-sm px-4 py-2 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform transform"
+                                className="w-28 text-sm px-4 py-2 rounded-md text-gray font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform transform"
                             >
                                 Previous
                             </button>
@@ -348,7 +348,7 @@ function Quiz() {
                                 <button
                                     onClick={handleNext}
                                     disabled={!canProceed}
-                                    className="w-28 text-sm px-4 py-2 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform transform"
+                                    className="w-28 text-sm px-4 py-2 rounded-lg bg-[#9ca7b8] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform transform"
                                 >
                                     Next
                                 </button>
@@ -356,7 +356,7 @@ function Quiz() {
                                 <button
                                     onClick={submitQuiz}
                                     disabled={!canProceed}
-                                    className="w-32 text-sm px-4 py-2 rounded-md bg-[#1f628e] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform"
+                                    className="w-32 text-sm px-4 py-2 rounded-lg bg-[#9ca7b8] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform"
                                 >
                                     View Results
                                 </button>
@@ -365,7 +365,7 @@ function Quiz() {
                     </div>
 
             {/* Progress Bar */}
-                <div className="fixed bottom-[2rem] left-0 w-full z-50 px-4 py-2">
+                <div className="fixed bottom-[2rem] left-0 w-full px-4 py-2 z-[30]">
                     <div className="max-w-xl mx-auto text-center">
                         <div className="w-full bg-gray-300 rounded-full h-1 mb-4">
                             <div
