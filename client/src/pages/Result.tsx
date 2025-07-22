@@ -169,8 +169,8 @@ function Result() {
         />
 
         <div className="relative z-10 flex flex-col min-h-screen">
-        {/* NAVBAR */}
-        <nav className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md font-nunito">
+          {/* NAVBAR */}
+          <nav className="w-full flex items-center justify-between px-6 py-4 bg-white shadow-md font-nunito">
             <div className="flex items-center">
               <img src="/blugo/logo.png" alt="GlowGuide Logo" className="w-[150px]" />
             </div>
@@ -185,36 +185,71 @@ function Result() {
           </nav>
 
           {/* Content */}
-          <div className="flex-grow flex flex-col items-center pt-16 px-4 pb-32">
-            <div className="w-full max-w-2xl space-y-8">
-              <h2 className="text-4xl font-nunito text-center text-[#547fac] mb-4">
-                Hi {firstName}, here’s your skincare profile
-              </h2>
+          <div className="flex-grow flex flex-col items-center pt-16 px-4 pb-32">              
+              {/* User Greeting */}
+                <h2 className="text-4xl font-nunito text-center text-[#547fac] mb-10">
+                  Hi {firstName}, here’s your skincare profile
+                </h2>
 
-              {/* Skin Concerns */}
-              <div>
-                <h3 className="text-2xl font-semibold pb-4 mb-2">Top Skin Concerns:</h3>
-                <div className="flex flex-wrap  justify-center gap-2">
-                  {topSkinConcerns.map(({ tagId, score }) => (
-                  <div
-                    key={tagId}
-                    className="inline-block rounded-full bg-blue-100 text-blue-800 items-center text-sm px-3 py-1 font-nunito">
-                    <span className="text-[#1f628e] font-bold block">{getTagName(tagId)}</span>
-                    <span className="text-gray-600 text-xs block">{getSeverityLabel(score)}
-                    </span>    
-                  </div>
-                ))}
+            <div className="w-full max-w-7xl px-4 md:px-8 flex flex-col md:flex-row gap-8">
+              {/* Left Column */}
+              <div className="flex-1 space-y-6">
+                {/* Skin Concerns */}
+                <div>
+                  <h3 className="text-2xl pb-4 mb-2">Your Top Skin Concerns</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {topSkinConcerns.map(({ tagId, score }) => {
+                      const severity = getSeverityLabel(score);
+                      const percentage = Math.round(score * 100);
+
+                      return (
+                        <div
+                        key={tagId}
+                        className="bg-white rounded-xl shadow-sm p-4">
+
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="text-[#1f628e] text-md">{getTagName(tagId)}</h4>
+                              <span className="text-sm font-light text-gray-600 italic">{severity}</span>
+                          </div>
+
+                      {/* Severity bar */}
+                      <div className="w-full bg-gray-200 rounded-full h-1">
+                        <div
+                          className="h-1 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${percentage}%`,
+                            backgroundColor:
+                              score >= 0.8
+                                ? '#9b1c1c'
+                                : score >= 0.7
+                                ? '#c95f36'
+                                : score >= 0.5
+                                ? '#d68b39'
+                                : '#e1b866',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
               {/* Summary below skin concerns */}
               {summary && (
-                <div >
-                  <h3 className="text-xl font-semibold mb-2">What this says about your skin</h3>
-                  <p className="text-gray-700 whitespace-pre-line">{summary}</p>
-                </div>
+                  <div className="bg-white rounded-2xl shadow-sm p-6 border border-white">
+                    <h3 className="text-2xl mb-4 text-[#1f628e] flex items-center gap-2">
+                      Your Skin's Profile
+                    </h3>
+                    <p className="text-gray-700 whitespace-pre-line leading-relaxed text-justify">
+                      {summary}
+                    </p>
+                  </div>
               )}
+            </div>
 
+            {/* Right Column */}
+            <div className="flex-1 space-y-6">
               {/* Product Picks */}
               <div>
                 <h3 className="text-2xl font-semibold mb-2">Top Product Picks:</h3>
@@ -258,7 +293,8 @@ function Result() {
             </div>
           </div>
         </div>
-        </div>
+      </div>
+    </div>
     );
     }
 
