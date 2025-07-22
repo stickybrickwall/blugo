@@ -139,6 +139,20 @@ function Quiz() {
         }
     };
 
+    const categoryLabels: Record<string, string> = {
+        personal: 'About You',
+        skin: 'Your Skin',
+        lifestyle: 'Your Lifestyle',
+        budget: 'Your Budget',
+    };
+
+    const categoryStyles: Record<string, { bg: string; text: string }> = {
+        personal: { bg: '#E4F1FB', text: '#1f628e' },
+        skin: { bg: '#DDEBE4', text: '#2c5d48' },
+        lifestyle: { bg: '#FDF2DC', text: '#8f5f20' },
+        budget: { bg: '#F5E4EF', text: '#6f4d5d' },
+    };
+
     const submitQuiz = async() => {
         setLoading(true);
         
@@ -244,7 +258,21 @@ function Quiz() {
             
             {/* QUIZ CONTENT */}
             <div className="flex-grow flex justify-center items-start px-4 pt-12 overflow-y-auto pb-32">
+
+                {/* Quiz Card */}
                 <div className="w-full max-w-xl bg-white bg-opacity-90 backdrop-blur-sm p-8 rounded-2xl shadow-lg space-y-8 overflow-y-auto">
+                
+                {/* Question Category Label */}
+                {q && categoryLabels[q.category] && (
+                    <div className="absolute top-7 rounded-l-md right-0 font-semibold text-sm px-3 py-1 italic uppercase tracking-wider"
+                    style={{
+                        backgroundColor: categoryStyles[q.category].bg,
+                        color: categoryStyles[q.category].text
+                    }}>
+                        {categoryLabels[q.category]}
+                    </div>
+                    )}
+                
                 {/* Question */}
                     <div className="min-h-[5rem] flex items-center justify-center text-center">
                         <h2 className="text-xl md:text-3xl font-light text-[#547fac]">
