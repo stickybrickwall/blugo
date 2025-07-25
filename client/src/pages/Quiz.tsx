@@ -233,8 +233,9 @@ function Quiz() {
     if (loading) {
         return (
             <div className="relative min-h-screen bg-background text-[#1f628e] font-poppins flex items-center justify-center">
-            <p className="text-xl font-light animate-pulse">
-                Hang tight! We are generating your recommendations...
+            <p className="text-xl font-light animate-pulse pb-4">
+                Hang tight! We are generating your recommendations. <br />
+                Your AI-powered explanations may take a few moments to prepare...
             </p>
             </div>
         );
@@ -384,7 +385,7 @@ function Quiz() {
                                 <button
                                     onClick={handleNext}
                                     disabled={!canProceed}
-                                    className="w-28 text-sm px-4 py-2 rounded-lg bg-[#9ca7b8] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform transform"
+                                    className="w-28 text-sm px-4 py-2 rounded-lg bg-[#7e94a8] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform transform"
                                 >
                                     Next
                                 </button>
@@ -392,7 +393,7 @@ function Quiz() {
                                 <button
                                     onClick={submitQuiz}
                                     disabled={!canProceed}
-                                    className="w-32 text-sm px-4 py-2 rounded-lg bg-[#9ca7b8] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform"
+                                    className="w-32 text-sm px-4 py-2 rounded-lg bg-[#7e94a8] text-white font-light disabled:bg-gray-300 disabled:opacity-60 hover:scale-105 transition-transform"
                                 >
                                     View Results
                                 </button>

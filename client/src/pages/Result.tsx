@@ -40,12 +40,16 @@ function Result() {
     const firstName = (state as any)?.firstName || localFirstName || 'there';
     const lastName = (state as any)?.lastName || localLastName || '';
 
-    const [summary, setSummary] = useState('');
+    const [skinConcernExp, setSkinConcernExp] = useState('');
+    const [productExp, setProductExp] = useState('');
 
 
     useEffect(() => {
       if (state?.recData?.skinConcernExplanation) {
-        setSummary(state.recData.skinConcernExplanation);
+        setSkinConcernExp(state.recData.skinConcernExplanation);
+      }
+      if (state?.recData?.productExplanation) {
+        setProductExp(state.recData.productExplanation);
       }
     }, [state]);
     
@@ -99,7 +103,8 @@ function Result() {
         setRecommendations(data.recommendations ?? null);
         setTopSkinConcerns(data.topSkinConcerns ?? []);
         setTopIngredients(data.topIngredients ?? []);
-        setSummary(data.skinConcernExplanation ?? '');
+        setSkinConcernExp(data.skinConcernExplanation ?? '');
+        setProductExp(data.productExplanation ?? '');
         setLatestResponse(data.latestResponse ?? null);
 
     } catch (err) {
@@ -192,13 +197,15 @@ function Result() {
           </nav>
 
           {/* Content */}
-          <div className="flex-grow flex flex-col items-center pt-16 px-4 pb-32">              
+          <div className="flex-grow flex flex-col items-center pt-16 px-4 pb-32 font-poppins">              
               {/* User Greeting */}
-                <h2 className="text-4xl font-nunito text-center text-[#547fac] mb-10">
+                <h2 className="text-4xl text-center text-[#547fac] mb-10">
                   Hi {firstName}, here’s your skincare profile
                 </h2>
 
             <div className="w-full max-w-7xl px-4 md:px-8 flex flex-col md:flex-row gap-8">
+
+
               {/* Left Column */}
               <div className="flex-1 space-y-6">
                 {/* Skin Concerns */}
@@ -242,17 +249,37 @@ function Result() {
                 </div>
               </div>
 
-              {/* Summary below skin concerns */}
-              {summary && (
+              {/* Skin Concern Explanation */}
+              {skinConcernExp && (
                   <div className="bg-white rounded-2xl shadow-sm p-6 border border-white">
                     <h3 className="text-2xl mb-4 text-[#1f628e] items-center gap-2">
                       What This Says About Your Skin
                     </h3>
                     <p className="text-gray-700 whitespace-pre-line leading-relaxed text-justify">
-                      {summary}
+                      {skinConcernExp}
                     </p>
                   </div>
               )}
+
+              {/* Top Ingredients */}
+              {topIngredients.length > 0 && (
+              <div>
+                <div className="bg-white rounded-2xl shadow-sm p-6 border border-white">
+                <h3 className="text-2xl mb-2 pb-4">Top Ingredients</h3>
+                <ul className="flex flex-wrap justify-center gap-2">
+                  {topIngredients.map(({ name }, i) => (
+                    <li
+                      key={i}
+                      className="bg-gray-100 text-[#1f628e] text-gray-600 px-3 py-1 rounded-full shadow-sm"
+                    >
+                      {name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    </li>
+                  ))}
+                </ul>
+                </div>
+                </div>
+              )}
+            
             </div>
 
             {/* Right Column */}
@@ -264,18 +291,11 @@ function Result() {
                   const rec = recommendations[cat];
                   return rec ? (
                     <div className="bg-white rounded-2xl shadow-sm p-3 border border-white mb-6">
-                    <div key={cat} className="w-full text-gray-700">
+                    <div key={cat} className="w-full text-[#1f628e]">
                       <h4 className="font-medium">
                         Step {index + 1}: {cat.charAt(0).toUpperCase() + cat.slice(1)}
                       </h4>
-                      <p>{rec.name}</p>
-                      <ul className="list-disc pl-6 text-sm mt-1">
-                        {Object.entries(rec.ingredients || {}).map(([ing]) => (
-                          <li key={ing}>
-                            {ing}
-                          </li>
-                        ))}
-                      </ul>
+                      <p className="text-lg font-light text-gray-900">{rec.name}</p>
                     </div>
                     </div>
                   ) : (
@@ -286,24 +306,18 @@ function Result() {
                 })}
               </div>
 
-              {/* Top Ingredients */}
-              {topIngredients.length > 0 && (
-              <div>
-                <div className="bg-white rounded-2xl shadow-sm p-6 border border-white">
-                <h3 className="text-2xl mb-2 pb-4">Top Ingredients</h3>
-                <ul className="flex flex-wrap justify-center gap-2">
-                  {topIngredients.map(({ name }, i) => (
-                    <li
-                      key={i}
-                      className="bg-gray-100 text-[#1f628e] text-gray-600 font-sm px-3 py-1 rounded-full shadow-sm"
-                    >
-                      {name}
-                    </li>
-                  ))}
-                </ul>
-                </div>
-                </div>
+              {/* Product Explanation */}
+              {productExp && (
+                  <div className="bg-white rounded-2xl shadow-sm p-6 border border-white">
+                    <h3 className="text-2xl mb-4 text-[#1f628e] items-center gap-2">
+                      Why These Products?
+                    </h3>
+                    <p className="text-gray-700 whitespace-pre-line leading-relaxed text-justify">
+                      {productExp}
+                    </p>
+                  </div>
               )}
+
             </div>
           </div>
         </div>

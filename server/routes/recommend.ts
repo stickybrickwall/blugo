@@ -23,6 +23,21 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const router = Router();
 
+const TAG_NAMES: Record<number, string> = {
+  1: 'Dry skin',
+  2: 'Oily skin',
+  3: 'Sensitive skin',
+  4: 'Clogged pores',
+  5: 'Textured skin',
+  6: 'Acne-prone skin',
+  7: 'Hyperpigmentation',
+  8: 'Dullness',
+  9: 'Redness',
+  10: 'Dehydrated skin',
+  11: 'Damaged skin barrier',
+  12: 'Aging'
+};
+
 router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   console.log('Recommendations route hit');
   (async() => {
@@ -33,9 +48,12 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
     4: 'moisturiser'
     };
 
+    const ORDERED_CATEGORIES = ['cleanser', 'toner', 'serum', 'moisturiser'];
+
     const SKIN_CONCERN_TAGS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 
     const REQUIRED_CATEGORIES = Object.keys(CATEGORY_MAP).map(Number); 
+
     try {
       if (!req.user) {
         return res.status(401).json({ error: 'User not authenticated' });
@@ -128,7 +146,7 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
         .filter(([tagId]) => SKIN_CONCERN_TAGS.has(+tagId))
         .map(([tagId, score]) => ({ tagId: +tagId, score }))
         .sort((a, b) => b.score - a.score)
-        .slice(0,4);
+        .slice(0,6);
 
       const tagIngredientMap = await getTagIngredientMap();
       const ingredientScores = computeIngredientScores(tagIngredientMap, normalised);
@@ -147,6 +165,8 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       }));
       
     //Step 7: Generate summary from quiz responses
+
+    // 7a: What This Says About Your Skin
       const { rows } = await pool.query(
         `SELECT responses FROM quiz_responses WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1`,
         [userId]
@@ -161,11 +181,11 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       A user answered a skincare quiz with the following inputs:
       ${formatted}
       All responses with a numerical value are selected from a range of 1 to 5. 
-      Based on this, diagnose their skin type and generate a personalised skin profile using second-person language. Keep the paragraph succint, less than 70 words, and be insightful.
+      Based on this, diagnose their skin type and generate a personalised skin profile using second-person language. Keep the paragraph succint, less than 100 words, and be insightful.
       `;
 
         const completion = await openai.chat.completions.create({
-          model: 'gpt-4o',
+          model: 'gpt-3.5-turbo',
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.7,
           max_tokens: 300,
@@ -174,30 +194,84 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
         skinConcernExplanation = completion.choices[0].message.content || '';
       }
       
+    // 7b: Why These Products?
+    const topSkinConcernsFormatted = skinConcernScores
+      .slice(0,4)
+      .map(c => `${TAG_NAMES[c.tagId]} (${Math.round(c.score * 100)}%)`)
+      .join(', ');
+
+    const topIngredientsFormatted = topIngredientsWithNames
+      .map(i => i.name)
+      .join(', ');
+
+    const orderedProductLines = ORDERED_CATEGORIES.map((category) => {
+      const product = readableRecommendations[category];
+      if (!product) return null;
+
+      const ingredients = productIngredients[product.id] || [];
+      const ingredientNames = ingredients.slice(0, 5).map(id => ingredientNameMap[id] || 'Unknown').join(', ');
+      const categoryName = category.charAt(0).toUpperCase() + category.slice(1);
+
+      return `${categoryName} – ${product.name}: ${ingredientNames}`;
+    }).filter(Boolean);
+
+    const productExplanationPrompt = `
+    You are a skincare expert. A user has the following skin concerns (by priority):
+    ${topSkinConcernsFormatted}
+
+    And the following top beneficial ingredients:
+    ${topIngredientsFormatted}
+
+    Below are the ingredient lists of 4 recommended products:
+    ${orderedProductLines.join('\n')}
+
+    These ingredient lists have been curated to show the most relevant ingredients for each product. Assume they are complete for your explanation.
+
+    Write 4 short paragraphs (around 30-50 words each), one for each category, in the following order: cleanser, toner, serum, moisturiser. Each paragraph should start with "For [CategoryName],".
+    Explain clearly and insightfully why the product was selected for the user. Connect each product's ingredients to their concerns and preferences. Use second-person language. 
+    `;
+
+    let productExplanation = '';
+    try {
+      const explanationResponse = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: productExplanationPrompt }],
+        temperature: 0.7,
+        max_tokens: 350
+      });
+      productExplanation = explanationResponse.choices[0].message.content || '';
+    } catch (e) {
+      console.error('Failed to generate product explanation:', e);
+      productExplanation = 'Explanation unavailable at this time.';
+    }
+
     // Step 8: Save results
       await pool.query(`
-        INSERT INTO user_recommendations (user_id, recommendations, skin_concerns, ingredients, skin_concern_exp, updated_at)
-        VALUES ($1, $2::jsonb, $3::jsonb, $4::jsonb, $5, NOW())
+        INSERT INTO user_recommendations (user_id, recommendations, skin_concerns, ingredients, skin_concern_exp, product_exp, updated_at)
+        VALUES ($1, $2::jsonb, $3::jsonb, $4::jsonb, $5, $6, NOW())
         ON CONFLICT (user_id)
         DO UPDATE SET 
           recommendations = EXCLUDED.recommendations, 
           skin_concerns = EXCLUDED.skin_concerns,
           ingredients = EXCLUDED.ingredients,
           skin_concern_exp = EXCLUDED.skin_concern_exp,
+          product_exp = EXCLUDED.product_exp,
           updated_at = NOW();
       `, [
           userId, 
           JSON.stringify(readableRecommendations),
           JSON.stringify(skinConcernScores),
           JSON.stringify(topIngredientsWithNames),
-          skinConcernExplanation
+          skinConcernExplanation,
+          productExplanation
         ]);
 
       res.json({ 
         recommendations: readableRecommendations,
         topSkinConcerns: skinConcernScores,
         topIngredients: topIngredientsWithNames,
-        skinConcernExplanation: skinConcernExplanation
+        skinConcernExplanation,
+        productExplanation
        });
 
     } catch (err) {
@@ -217,6 +291,7 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
         skin_concerns AS "topSkinConcerns", 
         ingredients AS "topIngredients",
         skin_concern_exp AS "skinConcernExplanation",
+        product_exp AS "productExplanation",
         updated_at AS "latestResponse"
       FROM user_recommendations
       WHERE user_id = $1
@@ -227,9 +302,9 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
       return;
     }
 
-    const { recommendations, topSkinConcerns, topIngredients, skinConcernExplanation, latestResponse } = rows[0];
+    const { recommendations, topSkinConcerns, topIngredients, skinConcernExplanation, productExplanation, latestResponse } = rows[0];
 
-    res.json({ recommendations, topSkinConcerns, topIngredients, skinConcernExplanation, latestResponse });
+    res.json({ recommendations, topSkinConcerns, topIngredients, skinConcernExplanation, productExplanation, latestResponse });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch past recommendations' });
   }

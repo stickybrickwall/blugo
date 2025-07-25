@@ -75,7 +75,7 @@ function Home() {
 
                     <button
                         onClick={goToQuiz}
-                        className="border text-white rounded-xl font-nunito text-md px-6 py-3 rounded-md hover:opacity-90 transition hover:scale-105"
+                        className="border text-white rounded-xl text-md px-6 py-3 rounded-md hover:opacity-90 transition hover:scale-105"
                     >
                         Take the Quiz
                     </button>
