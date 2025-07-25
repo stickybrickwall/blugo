@@ -25,27 +25,21 @@ function Result() {
     const navigate = useNavigate();
     const returnToHome = useReturnToHome();
 
-    const { state } = useLocation() as {
-        state: { 
-            firstName?: string; 
-            lastName?: string; 
-            recData?: {
-                recommendations: Recommendations;
-                topSkinConcerns: SkinConcern[];
-                topIngredients: Ingredient[];
-            };
-        };
-    };
+    const { state } = useLocation();
+    const localFirstName = localStorage.getItem('firstName');
+    const localLastName = localStorage.getItem('lastName');
 
     const [recommendations, setRecommendations] = useState<Recommendations | null>(state?.recData?.recommendations ?? null);
     const [topSkinConcerns,   setTopSkinConcerns]   = useState<SkinConcern[]>(state?.recData?.topSkinConcerns ?? []);
     const [topIngredients,    setTopIngredients]    = useState<Ingredient[]>(state?.recData?.topIngredients ?? []);
     const [loading, setLoading] = useState(!state?.recData);
     
-    const firstName = localStorage.getItem('firstName') || 'there';
-    const lastName = localStorage.getItem('lastName') || '';
+    const firstName = (state as any)?.firstName || localFirstName || 'there';
+    const lastName = (state as any)?.lastName || localLastName || '';
 
     const [summary, setSummary] = useState('');
+
+
     useEffect(() => {
       const fetchSummary = async () => {
         try {
@@ -82,7 +76,15 @@ function Result() {
     };
 
     useEffect(() => {
-    if (state?.recData) return;
+      const hasValidRecData = !!state?.recData?.recommendations;
+
+      if (hasValidRecData) {
+        setRecommendations(state?.recData?.recommendations ?? null);
+        setTopSkinConcerns(state?.recData?.topSkinConcerns ?? []);
+        setTopIngredients(state?.recData?.topIngredients ?? []);
+        setLoading(false);
+        return;
+      }
 
     // Fallback: View past results
     const fetchRecommendations = async () => {
@@ -94,26 +96,26 @@ function Result() {
       }
 
       try {
+        const token = localStorage.getItem('token');
         const res = await fetch('http://localhost:5000/recommend/latest', {
           headers: {
             Authorization: `Bearer ${token}`
           }
-        });
+        })
         if (!res.ok) {
           throw new Error('Failed to fetch past results');
         }
 
-        const data: {
-            recommendations: Recommendations;
-            topSkinConcerns: SkinConcern[];
-            topIngredients: Ingredient[];
-        } = await res.json();
+        const data = await res.json();
+
+        if (!res.ok) {
+        throw new Error('Failed to fetch past results');
+      }
 
         setRecommendations(data.recommendations ?? null);
         setTopSkinConcerns(data.topSkinConcerns ?? []);
         setTopIngredients(data.topIngredients ?? []);
     } catch (err) {
-        console.error(err);
         alert('Something went wrong.');
         navigate('/home');
     } finally {
@@ -148,8 +150,12 @@ function Result() {
     };
 
     if (loading) {
-    return <div className="p-8">Loading...</div>;
-  }
+    return (
+    <div className="relative min-h-screen bg-background text-[#1f628e] font-poppins flex items-center justify-center">
+      <p className="text-xl font-light">Loading...</p>
+    </div>
+  );
+}
 
     if (!recommendations) {
         return (
@@ -262,4 +268,4 @@ function Result() {
     );
     }
 
-export default Result;
+export default Result;``

@@ -82,3 +82,10 @@ router.post('/signup', async (req: Request, res: Response) => {
     })
 
 export default router;
+
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+  };
+}

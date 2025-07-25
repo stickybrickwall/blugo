@@ -80,7 +80,7 @@ function Login() {
                         </button>
                     </form>
                     <p className="mt-4 text-sm text-center font-nunito">
-                        Don't have an account? <Link to="/signup" className="text-[#1f628e] font-semibold underline">Signup here!</Link>
+                        Don't have an account? <Link to="/signup" className="text-[#1f628e] font-semibold underline">Sign up here!</Link>
                     </p>
                 </div>
             </div>

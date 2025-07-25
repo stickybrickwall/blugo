@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Request, Router, Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { getTagMaxScores } from '../db/queries/tags';
 import { getUserTagScores } from '../db/queries/userTagScores';
@@ -170,10 +170,10 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
   })()
 });
 
-router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Response) => {
-  (async() => {
+router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user?.id;
+
     const { rows } = await pool.query(`
       SELECT 
         recommendations, 
@@ -184,16 +184,16 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
     `, [userId]);
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'No recommendations found' });
+      res.status(404).json({ error: 'No recommendations found' });
+      return;
     }
 
     const { recommendations, topSkinConcerns, topIngredients } = rows[0];
 
     res.json({ recommendations, topSkinConcerns, topIngredients });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Failed to fetch past recommendations' });
   }
-})});
+});
 
 export default router;
