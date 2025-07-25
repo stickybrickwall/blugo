@@ -4,6 +4,7 @@ import Signup from './pages/Signup';
 import Home from './pages/Home';
 import Quiz from './pages/Quiz';
 import Result from './pages/Result';
+import Account from './pages/Account';
 import './App.css'
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
       <Route path="/home" element={<Home />} />
       <Route path="/quiz" element={<Quiz />} />
       <Route path="/result" element={<Result />} />
+      <Route path="/account" element={<Account />} />
     </Routes>
   );
 }

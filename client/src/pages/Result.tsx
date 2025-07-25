@@ -25,6 +25,8 @@ function Result() {
     const navigate = useNavigate();
     const returnToHome = useReturnToHome();
 
+    const [noData, setNoData] = useState(false);
+
     const { state } = useLocation();
     const localFirstName = localStorage.getItem('firstName');
     const localLastName = localStorage.getItem('lastName');
@@ -32,6 +34,7 @@ function Result() {
     const [recommendations, setRecommendations] = useState<Recommendations | null>(state?.recData?.recommendations ?? null);
     const [topSkinConcerns,   setTopSkinConcerns]   = useState<SkinConcern[]>(state?.recData?.topSkinConcerns ?? []);
     const [topIngredients,    setTopIngredients]    = useState<Ingredient[]>(state?.recData?.topIngredients ?? []);
+    const [latestResponse, setLatestResponse] = useState<string | null>(null);
     const [loading, setLoading] = useState(!state?.recData);
     
     const firstName = (state as any)?.firstName || localFirstName || 'there';
@@ -101,20 +104,25 @@ function Result() {
           headers: {
             Authorization: `Bearer ${token}`
           }
-        })
-        if (!res.ok) {
-          throw new Error('Failed to fetch past results');
-        }
+        });
 
-        const data = await res.json();
+        if (res.status === 404) {
+          // No quiz data for user
+          setNoData(true);
+          return;
+        }
 
         if (!res.ok) {
         throw new Error('Failed to fetch past results');
       }
 
+        const data = await res.json();
+
         setRecommendations(data.recommendations ?? null);
         setTopSkinConcerns(data.topSkinConcerns ?? []);
         setTopIngredients(data.topIngredients ?? []);
+        setLatestResponse(data.latestResponse ?? null);
+        console.log('📦 latestResponse received:', data.latestResponse);
     } catch (err) {
         alert('Something went wrong.');
         navigate('/home');
@@ -150,12 +158,26 @@ function Result() {
     };
 
     if (loading) {
-    return (
-    <div className="relative min-h-screen bg-background text-[#1f628e] font-poppins flex items-center justify-center">
-      <p className="text-xl font-light">Loading...</p>
-    </div>
-  );
-}
+      return (
+        <div className="relative min-h-screen bg-background text-[#1f628e] font-poppins flex items-center justify-center">
+          <p className="text-xl font-light">Loading...</p>
+        </div>
+      );
+    }
+
+    if (noData) {
+      return (
+        <div className="min-h-screen bg-background text-center text-[#1f628e] font-poppins flex flex-col items-center justify-center">
+          <p className="text-lg mb-6">You haven’t completed the quiz yet.</p>
+          <button
+            onClick={() => navigate('/quiz')}
+            className="bg-[#1f628e] text-white px-6 py-3 rounded-md hover:opacity-90 transition"
+          >
+            Take the Quiz
+          </button>
+        </div>
+      );
+    }
 
     if (!recommendations) {
         return (
@@ -202,7 +224,7 @@ function Result() {
               <div className="flex-1 space-y-6">
                 {/* Skin Concerns */}
                 <div>
-                  <h3 className="text-2xl pb-4 mb-2">Your Top Skin Concerns</h3>
+                  <h3 className="text-2xl pb-4 mb-2">Top Skin Concerns</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {topSkinConcerns.map(({ tagId, score }) => {
                       const severity = getSeverityLabel(score);
@@ -244,8 +266,8 @@ function Result() {
               {/* Summary below skin concerns */}
               {summary && (
                   <div className="bg-white rounded-2xl shadow-sm p-6 border border-white">
-                    <h3 className="text-2xl mb-4 text-[#1f628e] flex items-center gap-2">
-                      Your Skin's Profile
+                    <h3 className="text-2xl mb-4 text-[#1f628e] items-center gap-2">
+                      What This Says About Your Skin
                     </h3>
                     <p className="text-gray-700 whitespace-pre-line leading-relaxed text-justify">
                       {summary}
@@ -258,11 +280,12 @@ function Result() {
             <div className="flex-1 space-y-6">
               {/* Product Picks */}
               <div>
-                <h3 className="text-2xl font-semibold mb-2">Top Product Picks:</h3>
+                <h3 className="text-2xl text-[#1f628e] pb-4 mb-2">Top Product Picks</h3>
                 {['cleanser', 'toner', 'serum', 'moisturiser'].map((cat, index) => {
                   const rec = recommendations[cat];
                   return rec ? (
-                    <div key={cat} className="mb-6">
+                    <div className="bg-white rounded-2xl shadow-sm p-3 border border-white mb-6">
+                    <div key={cat} className="w-full text-gray-700">
                       <h4 className="font-medium">
                         Step {index + 1}: {cat.charAt(0).toUpperCase() + cat.slice(1)}
                       </h4>
@@ -275,6 +298,7 @@ function Result() {
                         ))}
                       </ul>
                     </div>
+                    </div>
                   ) : (
                     <p key={cat} className="text-sm italic text-gray-600">
                       No recommendation available for {cat}
@@ -286,22 +310,36 @@ function Result() {
               {/* Top Ingredients */}
               {topIngredients.length > 0 && (
               <div>
-                <h3 className="text-2xl font-semibold mb-2">Top Ingredients:</h3>
-                <ul className="list-none pl-0 space-y-1">
-                  {topIngredients.map(({ ingredientId, name }) => (
-                    <li key={ingredientId}>
+                <div className="bg-white rounded-2xl shadow-sm p-6 border border-white">
+                <h3 className="text-2xl mb-2 pb-4">Top Ingredients</h3>
+                <ul className="flex flex-wrap justify-center gap-2">
+                  {topIngredients.map(({ name }, i) => (
+                    <li
+                      key={i}
+                      className="bg-gray-100 text-[#1f628e] text-gray-600 font-sm px-3 py-1 rounded-full shadow-sm"
+                    >
                       {name}
                     </li>
                   ))}
                 </ul>
-              </div>
+                </div>
+                </div>
               )}
             </div>
           </div>
         </div>
+        {latestResponse && (
+        <p className="text-sm text-gray-500 italic text-center mt-8 pb-4">
+          Based on your response at {new Date(latestResponse).toLocaleString('en-SG', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+              timeZone: 'Asia/Singapore'
+            })}
+        </p>
+      )}
       </div>
     </div>
     );
     }
 
-export default Result;``
+export default Result;

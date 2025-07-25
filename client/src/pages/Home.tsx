@@ -16,9 +16,8 @@ function Home() {
         });
     };
 
-    const handleLogout = () => {
-        localStorage.clear();
-        navigate('/');
+    const goToAccount = () => {
+        navigate('/account');
     };
 
     return (
@@ -44,10 +43,10 @@ function Home() {
                     </button>
 
                     <button 
-                        onClick={handleLogout} 
+                        onClick={goToAccount} 
                         className="bg-white text-[#1f628e] font-normal px-6 py-3 rounded-md hover:opacity-90 transition"
                     >
-                        Logout
+                        Account
                     </button>
                 </div>
             </nav>

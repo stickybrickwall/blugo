@@ -121,7 +121,7 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
         .filter(([tagId]) => SKIN_CONCERN_TAGS.has(+tagId))
         .map(([tagId, score]) => ({ tagId: +tagId, score }))
         .sort((a, b) => b.score - a.score)
-        .slice(0,3);
+        .slice(0,4);
 
       const tagIngredientMap = await getTagIngredientMap();
       const ingredientScores = computeIngredientScores(tagIngredientMap, normalised);
@@ -178,7 +178,8 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
       SELECT 
         recommendations, 
         skin_concerns AS "topSkinConcerns", 
-        ingredients AS "topIngredients"
+        ingredients AS "topIngredients",
+        updated_at AS "latestResponse"
       FROM user_recommendations
       WHERE user_id = $1
     `, [userId]);
@@ -188,9 +189,9 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
       return;
     }
 
-    const { recommendations, topSkinConcerns, topIngredients } = rows[0];
+    const { recommendations, topSkinConcerns, topIngredients, latestResponse } = rows[0];
 
-    res.json({ recommendations, topSkinConcerns, topIngredients });
+    res.json({ recommendations, topSkinConcerns, topIngredients, latestResponse });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch past recommendations' });
   }

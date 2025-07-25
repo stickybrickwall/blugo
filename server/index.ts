@@ -5,6 +5,7 @@ import authRoutes from './routes/auth';
 import quizRoutes from './routes/quiz';
 import recommendRoutes from './routes/recommend';
 import summaryRoutes from './routes/summary';
+import accountRoutes from './routes/account';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use('/auth', authRoutes);
 app.use('/quiz', quizRoutes);
 app.use('/recommend', recommendRoutes);
 app.use('/summary', summaryRoutes);
+app.use('/', accountRoutes)
 
 app.get('/', (req, res) => {
   res.send('GlowGuide backend is live.');
