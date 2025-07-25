@@ -230,6 +230,16 @@ function Quiz() {
         }
     };
 
+    if (loadingQuestions) {
+        return (
+            <div className="relative min-h-screen bg-background text-[#1f628e] font-poppins flex items-center justify-center">
+            <p className="text-xl font-light animate-pulse pb-4">
+                Preparing your quiz...
+            </p>
+            </div>
+        );
+    }
+
     if (loading) {
         return (
             <div className="relative min-h-screen bg-background text-[#1f628e] font-poppins flex items-center justify-center">
@@ -239,7 +249,7 @@ function Quiz() {
             </p>
             </div>
         );
-        }
+    }
 
     return (
     <div className="relative min-h-screen bg-background text-primary font-poppins flex flex-col">

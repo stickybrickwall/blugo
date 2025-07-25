@@ -155,7 +155,7 @@ function Result() {
           <p className="text-lg mb-6">You haven’t completed the quiz yet.</p>
           <button
             onClick={() => navigate('/quiz')}
-            className="bg-[#1f628e] text-white px-6 py-3 rounded-md hover:opacity-90 transition"
+            className="bg-[#406485] text-white px-6 py-3 rounded-md hover:opacity-90 transition"
           >
             Take the Quiz
           </button>

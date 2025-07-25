@@ -6,8 +6,11 @@ function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const [isLoading, setIsLoading] = useState(false);
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
 
         try {
             const res = await fetch('http://localhost:5000/auth/login', {
@@ -38,8 +41,23 @@ function Login() {
         } catch (err) {
             console.error(err);
             alert('Something went wrong during login');
+        } finally {
+            setIsLoading(false);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background text-[#1f628e] font-poppins">
+            <div className="text-center">
+                <p className="text-xl font-light mb-2">Logging you in...</p>
+                <p className="text-sm text-gray-500 font-nunito">
+                Please allow a few moments for our server to initialize.
+                </p>
+            </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full min-h-screen bg-background overflow-x-hidden flex flex-col items-center justify-center px-4 relative font-nunito">
