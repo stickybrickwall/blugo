@@ -38,8 +38,8 @@ router.post('/generate-summary', authenticate, async (req: AuthenticatedRequest,
         const prompt = `
     A user answered a skincare quiz with the following inputs:
     ${formatted}
-
-    Based on this, generate a personalised skincare profile. Keep the paragraph succint, less than 70 words, and be as insightful as possible.
+    All responses with a numerical value are selected from a range of 1 to 5. 
+    Based on this, diagnose their skin type and generate a personalised skin profile. Keep the paragraph succint, less than 70 words, and be insightful.
     `;
 
         const completion = await openai.chat.completions.create({
