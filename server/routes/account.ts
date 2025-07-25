@@ -26,9 +26,7 @@ router.post('/account/change-password', authenticate, (async (req: Authenticated
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    console.log('✅ Password is valid. Updating DB...');
     await pool.query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [hashedPassword, userId]);
-    console.log('✅ Password updated in database.');
 
     res.sendStatus(204);
   } catch (err) {

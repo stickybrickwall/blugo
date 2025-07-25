@@ -230,7 +230,15 @@ function Quiz() {
         }
     };
 
-    if (loading) return <p>Hang tight! We are generating your recommendations...</p>;
+    if (loading) {
+        return (
+            <div className="relative min-h-screen bg-background text-[#1f628e] font-poppins flex items-center justify-center">
+            <p className="text-xl font-light animate-pulse">
+                Hang tight! We are generating your recommendations...
+            </p>
+            </div>
+        );
+        }
 
     return (
     <div className="relative min-h-screen bg-background text-primary font-poppins flex flex-col">

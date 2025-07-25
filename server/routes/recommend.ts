@@ -1,4 +1,4 @@
-import { Request, Router, Response } from 'express';
+import { Router, Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { getTagMaxScores } from '../db/queries/tags';
 import { getUserTagScores } from '../db/queries/userTagScores';
@@ -13,6 +13,13 @@ import { selectTopPerCategory } from '../services/selector';
 import { computeProductScores } from '../services/scorer';
 import { computeIngredientScores } from '../services/scorer';
 import pool from '../db/db';
+import { formatQuizResponses } from '../utils/quizFormatter';
+import { OpenAI } from 'openai';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const router = Router();
 
@@ -139,28 +146,58 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
         score
       }));
       
+    //Step 7: Generate summary from quiz responses
+      const { rows } = await pool.query(
+        `SELECT responses FROM quiz_responses WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        [userId]
+      );
+
+      let skinConcernExplanation = '';
+      if (rows.length > 0) {
+        const responses = rows[0].responses;
+        const formatted = formatQuizResponses(responses); // Import this from your utils
+
+        const prompt = `
+      A user answered a skincare quiz with the following inputs:
+      ${formatted}
+      All responses with a numerical value are selected from a range of 1 to 5. 
+      Based on this, diagnose their skin type and generate a personalised skin profile using second-person language. Keep the paragraph succint, less than 70 words, and be insightful.
+      `;
+
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+          max_tokens: 300,
+        });
+
+        skinConcernExplanation = completion.choices[0].message.content || '';
+      }
       
-    // Step 7: Save results
+    // Step 8: Save results
       await pool.query(`
-        INSERT INTO user_recommendations (user_id, recommendations, skin_concerns, ingredients, updated_at)
-        VALUES ($1, $2::jsonb, $3::jsonb, $4::jsonb, NOW())
+        INSERT INTO user_recommendations (user_id, recommendations, skin_concerns, ingredients, skin_concern_exp, updated_at)
+        VALUES ($1, $2::jsonb, $3::jsonb, $4::jsonb, $5, NOW())
         ON CONFLICT (user_id)
         DO UPDATE SET 
           recommendations = EXCLUDED.recommendations, 
           skin_concerns = EXCLUDED.skin_concerns,
           ingredients = EXCLUDED.ingredients,
+          skin_concern_exp = EXCLUDED.skin_concern_exp,
           updated_at = NOW();
       `, [
           userId, 
           JSON.stringify(readableRecommendations),
           JSON.stringify(skinConcernScores),
           JSON.stringify(topIngredientsWithNames),
+          skinConcernExplanation
         ]);
 
       res.json({ 
         recommendations: readableRecommendations,
         topSkinConcerns: skinConcernScores,
-        topIngredients: topIngredientsWithNames 
+        topIngredients: topIngredientsWithNames,
+        skinConcernExplanation: skinConcernExplanation
        });
 
     } catch (err) {
@@ -179,6 +216,7 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
         recommendations, 
         skin_concerns AS "topSkinConcerns", 
         ingredients AS "topIngredients",
+        skin_concern_exp AS "skinConcernExplanation",
         updated_at AS "latestResponse"
       FROM user_recommendations
       WHERE user_id = $1
@@ -189,9 +227,9 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
       return;
     }
 
-    const { recommendations, topSkinConcerns, topIngredients, latestResponse } = rows[0];
+    const { recommendations, topSkinConcerns, topIngredients, skinConcernExplanation, latestResponse } = rows[0];
 
-    res.json({ recommendations, topSkinConcerns, topIngredients, latestResponse });
+    res.json({ recommendations, topSkinConcerns, topIngredients, skinConcernExplanation, latestResponse });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch past recommendations' });
   }

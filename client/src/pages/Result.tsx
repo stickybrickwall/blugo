@@ -44,32 +44,10 @@ function Result() {
 
 
     useEffect(() => {
-      const fetchSummary = async () => {
-        try {
-          const token = localStorage.getItem('token')
-          const response = await fetch('http://localhost:5000/summary/generate-summary', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-
-          const data = await response.json();
-          if (response.ok) {
-            setSummary(data.summary);
-          } else {
-            console.error('Summary ftech error:', data.error);
-          }
-        } catch (err) {
-          console.error('Failed to fetch summary:', err);
-        }
-      };
-
-      if (topSkinConcerns.length > 0) {
-        fetchSummary();
+      if (state?.recData?.skinConcernExplanation) {
+        setSummary(state.recData.skinConcernExplanation);
       }
-    }, [topSkinConcerns]);
+    }, [state]);
     
     const goToHome = () => {
         navigate('/home', { state: {
@@ -121,8 +99,9 @@ function Result() {
         setRecommendations(data.recommendations ?? null);
         setTopSkinConcerns(data.topSkinConcerns ?? []);
         setTopIngredients(data.topIngredients ?? []);
+        setSummary(data.skinConcernExplanation ?? '');
         setLatestResponse(data.latestResponse ?? null);
-        console.log('📦 latestResponse received:', data.latestResponse);
+
     } catch (err) {
         alert('Something went wrong.');
         navigate('/home');
