@@ -32,8 +32,9 @@ function Account() {
 
   const handleChangePassword = async () => {
     const oldPassword = prompt('Enter your current password:');
+    if (!oldPassword) return;
     const newPassword = prompt('Enter your new password:');
-    if (!oldPassword || !newPassword) return;
+    if (!oldPassword) return;
 
     try {
         const token = localStorage.getItem('token');
@@ -53,7 +54,6 @@ function Account() {
             throw new Error(data.error);
             }
 
-        alert('Password changed successfully.');
     } catch (err) {
         alert(`Failed to change password: ${(err as Error).message}`);
     }
