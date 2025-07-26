@@ -20,6 +20,8 @@ router.post('/', async (req: Request, res: Response) => {
         return res.status(400).json({ error: 'Invalid response' });
       }
 
+      console.log('📩 Received responses:', JSON.stringify(responses, null, 2)); 
+
       // Fetch all questions n answers
       const { rows: allQuestions } = await pool.query(`SELECT id, text FROM questions`);
       const { rows: allAnswers } = await pool.query(`SELECT id, question_id, answer_text FROM answers`);
@@ -35,6 +37,7 @@ router.post('/', async (req: Request, res: Response) => {
 
       // MAIN scoring logic
       for (const [questionText, value] of Object.entries(responses)) {
+        console.log(`➡️ Processing question: "${questionText}" with value:`, value);
         const question = allQuestions.find(q => q.text === questionText);
         if (!question) continue;
 
@@ -43,6 +46,8 @@ router.post('/', async (req: Request, res: Response) => {
           const answer = allAnswers.find(
             a => a.question_id === question.id && a.answer_text === value
           );
+          console.log(`🔎 Matched answer for "${questionText}":`, answer);
+
           if (!answer) continue;
 
           const { rows } = await pool.query(
@@ -58,12 +63,15 @@ router.post('/', async (req: Request, res: Response) => {
             const answer = allAnswers.find(
               a => a.question_id === question.id && a.answer_text === v
             );
+            console.log(`🔎 Matched MULTI answer for "${questionText}" value "${v}":`, answer);
+
             if (!answer) continue;
 
             const { rows } = await pool.query(
               `SELECT tag_id, score FROM answer_tag_scores WHERE answer_id = $1`,
               [answer.id]
             );
+            console.log(`🏷️ Tag scores for answer ID ${answer.id}:`, rows);
             accumulate(rows);
           }
         }
@@ -96,12 +104,15 @@ router.post('/', async (req: Request, res: Response) => {
       }
 
       // Fill in zeroes for any missing tags
-      const allTagIds = Array.from({ length: 18 }, (_, i) => i + 1);
+      const { rows: tagRows } = await pool.query('SELECT id FROM tags');
+      const allTagIds = tagRows.map(r => r.id);
       for (const tagId of allTagIds) {
         if (!(tagId in tagScores)) {
           tagScores[tagId] = 0;
         }
       }
+
+      console.log('✅ Final tagScores before save:', tagScores);
 
       // Fill up user_tag_scores table
       for (const [tagId, score] of Object.entries(tagScores)) {

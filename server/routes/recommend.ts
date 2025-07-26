@@ -117,7 +117,7 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       // If overfiltered: Second attempt at filtering with more lenient blocked list filter.
       if (missingCategories.length > 0) {
         console.warn('Retrying blocklist filter with tolerance (≤20% blocked ingredients allowed)');
-        filteredProducts = filterByBlocklist(productScores, blockedIngredients, productIngredients, true);
+        filteredProducts = filterByBlocklist(budgetFiltered, blockedIngredients, productIngredients, true);
         console.log('Products after tolerant blocklist:', Object.keys(filteredProducts).length);
       }
 
@@ -261,7 +261,8 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
     These ingredient lists have been curated to show the most relevant ingredients for each product. 
 
     Write 4 short paragraphs (around 30-50 words each), one for each category, in the following order: cleanser, toner, serum, moisturiser. Each paragraph should start with "For [CategoryName],".
-    Explain clearly and insightfully why the product was selected for the user. Connect each product's ingredients to their concerns and preferences. Use second-person language. 
+    Explain clearly and insightfully why the product was selected for the user. Connect each product's ingredients to the user's concerns. 
+    Use second-person language. 
     `;
 
     let productExplanation = '';
