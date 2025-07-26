@@ -387,7 +387,18 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
 
     const { recommendations, topSkinConcerns, topIngredients, blockedIngredients, skinConcernExplanation, productExplanation, ingredientExplanation, latestResponse } = rows[0];
 
-    res.json({ recommendations, topSkinConcerns, topIngredients, blockedIngredients, skinConcernExplanation, productExplanation, ingredientExplanation, latestResponse });
+    const normalizedIngredientExplanation: Record<string, string> = {};
+
+    if (ingredientExplanation && typeof ingredientExplanation === 'object') {
+      for (const entry of Array.isArray(ingredientExplanation) ? ingredientExplanation : Object.values(ingredientExplanation)) {
+        if (entry?.name && entry?.explanation) {
+          const key = entry.name.trim().toLowerCase();
+          normalizedIngredientExplanation[key] = entry.explanation;
+        }
+      }
+    }
+
+    res.json({ recommendations, topSkinConcerns, topIngredients, blockedIngredients, skinConcernExplanation, productExplanation, ingredientExplanation: normalizedIngredientExplanation, latestResponse });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch past recommendations' });
   }
