@@ -150,21 +150,33 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
 
       const tagIngredientMap = await getTagIngredientMap();
       const ingredientScores = computeIngredientScores(tagIngredientMap, normalised);
+
       const unblockedIngredientScores = Object.entries(ingredientScores)
         .filter(([ingredientIdStr]) => !blockedIngredients.has(+ingredientIdStr))
         .sort((a, b) => b[1] - a[1])
         .slice(0,10)
         .map(([ingredientId, score]) => ({ ingredientId: +ingredientId, score }));
 
-      const ingredientIds = unblockedIngredientScores.map(i => i.ingredientId);
-      const ingredientNameMap = await getIngredientNames(ingredientIds);
+      const topIngredientIds = unblockedIngredientScores.map(i => i.ingredientId);
+      const blockedIngredientIds = Array.from(blockedIngredients);
+
+      const ingredientIds = topIngredientIds.concat(blockedIngredientIds);
+      const uniqueIngredientIds = Array.from(new Set(ingredientIds));
+
+      const ingredientNameMap = await getIngredientNames(uniqueIngredientIds); // for all blocked and unblocked
+
       const topIngredientsWithNames = unblockedIngredientScores.map(({ ingredientId, score }) => ({
         ingredientId,
         name: ingredientNameMap[ingredientId] || 'Unknown',
         score
       }));
+
+      const blockedIngredientNames = blockedIngredientIds
+        .map(id => ingredientNameMap[id])
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
       
-    //Step 7: Generate summary from quiz responses
+    //Step 7: Generate explanations from quiz responses
 
     // 7a: What This Says About Your Skin
       const { rows } = await pool.query(
@@ -245,33 +257,75 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       productExplanation = 'Explanation unavailable at this time.';
     }
 
+    // Step 7c: Ingredient Explanations
+    let ingredientExplanation: Record<string, string> = {};
+
+    try {
+      const prompt = `
+    You are a skincare expert. A user has the following top skin concerns: ${topSkinConcernsFormatted}.
+    Explain in one sentence each how the following ingredients help with those concerns:
+
+    ${topIngredientsFormatted}
+
+    Return your response as a JSON object in the format:
+    {
+      "IngredientName1": "short explanation...",
+      "IngredientName2": "short explanation...",
+      ...
+    }
+    Limit each explanation to 20 words or less.
+    `;
+
+      const explanationResponse = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 300,
+      });
+
+      const rawText = explanationResponse.choices[0].message.content || '';
+      ingredientExplanation = JSON.parse(rawText);
+      ingredientExplanation = Object.fromEntries(
+        Object.entries(ingredientExplanation).map(([k, v]) => [k.trim().toLowerCase(), v])
+      );
+    } catch (e) {
+      console.error('⚠️ Failed to generate ingredient explanations:', e);
+      ingredientExplanation = {};
+    }
+
     // Step 8: Save results
       await pool.query(`
-        INSERT INTO user_recommendations (user_id, recommendations, skin_concerns, ingredients, skin_concern_exp, product_exp, updated_at)
-        VALUES ($1, $2::jsonb, $3::jsonb, $4::jsonb, $5, $6, NOW())
+        INSERT INTO user_recommendations (user_id, recommendations, skin_concerns, ingredients, blocked_ingredients, skin_concern_exp, product_exp, ingredient_exp, updated_at)
+        VALUES ($1, $2::jsonb, $3::jsonb, $4::jsonb, $5::jsonb, $6, $7, $8, NOW())
         ON CONFLICT (user_id)
         DO UPDATE SET 
           recommendations = EXCLUDED.recommendations, 
           skin_concerns = EXCLUDED.skin_concerns,
           ingredients = EXCLUDED.ingredients,
+          blocked_ingredients = EXCLUDED.blocked_ingredients,
           skin_concern_exp = EXCLUDED.skin_concern_exp,
           product_exp = EXCLUDED.product_exp,
+          ingredient_exp = EXCLUDED.ingredient_exp,
           updated_at = NOW();
       `, [
           userId, 
           JSON.stringify(readableRecommendations),
           JSON.stringify(skinConcernScores),
           JSON.stringify(topIngredientsWithNames),
+          JSON.stringify(blockedIngredientNames),
           skinConcernExplanation,
-          productExplanation
+          productExplanation,
+          ingredientExplanation,
         ]);
 
       res.json({ 
         recommendations: readableRecommendations,
         topSkinConcerns: skinConcernScores,
         topIngredients: topIngredientsWithNames,
+        blockedIngredients: blockedIngredientNames,
         skinConcernExplanation,
-        productExplanation
+        productExplanation,
+        ingredientExplanation,
        });
 
     } catch (err) {
@@ -290,8 +344,10 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
         recommendations, 
         skin_concerns AS "topSkinConcerns", 
         ingredients AS "topIngredients",
+        blocked_ingredients AS "blockedIngredients",
         skin_concern_exp AS "skinConcernExplanation",
         product_exp AS "productExplanation",
+        ingredient_exp AS "ingredientExplanation",
         updated_at AS "latestResponse"
       FROM user_recommendations
       WHERE user_id = $1
@@ -302,9 +358,9 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
       return;
     }
 
-    const { recommendations, topSkinConcerns, topIngredients, skinConcernExplanation, productExplanation, latestResponse } = rows[0];
+    const { recommendations, topSkinConcerns, topIngredients, blockedIngredients, skinConcernExplanation, productExplanation, ingredientExplanation, latestResponse } = rows[0];
 
-    res.json({ recommendations, topSkinConcerns, topIngredients, skinConcernExplanation, productExplanation, latestResponse });
+    res.json({ recommendations, topSkinConcerns, topIngredients, blockedIngredients, skinConcernExplanation, productExplanation, ingredientExplanation, latestResponse });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch past recommendations' });
   }

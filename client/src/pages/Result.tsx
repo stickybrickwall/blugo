@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useReturnToHome  } from '../hooks/returnToHome';
 
 type Product = {
@@ -26,6 +26,7 @@ function Result() {
     const returnToHome = useReturnToHome();
 
     const [noData, setNoData] = useState(false);
+    const [showFullBlocked, setShowFullBlocked] = useState(false);
 
     const { state } = useLocation();
     const localFirstName = localStorage.getItem('firstName');
@@ -34,6 +35,7 @@ function Result() {
     const [recommendations, setRecommendations] = useState<Recommendations | null>(state?.recData?.recommendations ?? null);
     const [topSkinConcerns,   setTopSkinConcerns]   = useState<SkinConcern[]>(state?.recData?.topSkinConcerns ?? []);
     const [topIngredients,    setTopIngredients]    = useState<Ingredient[]>(state?.recData?.topIngredients ?? []);
+    const [blockedIngredients, setBlockedIngredients] = useState<string[]>(state?.recData?.blockedIngredients ?? []);
     const [latestResponse, setLatestResponse] = useState<string | null>(null);
     const [loading, setLoading] = useState(!state?.recData);
     
@@ -42,7 +44,10 @@ function Result() {
 
     const [skinConcernExp, setSkinConcernExp] = useState('');
     const [productExp, setProductExp] = useState('');
+    const [ingredientExp, setIngredientExp] = useState<Record<string, string>>(state?.recData?.ingredientExplanation ?? {});
+    const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
 
+    const ingredientRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
       if (state?.recData?.skinConcernExplanation) {
@@ -50,6 +55,12 @@ function Result() {
       }
       if (state?.recData?.productExplanation) {
         setProductExp(state.recData.productExplanation);
+      }
+      if (state?.recData?.blockedIngredients) {
+        setBlockedIngredients(state.recData.blockedIngredients);
+      }
+      if (state?.recData?.ingredientExplanation) {
+        setIngredientExp(state.recData.ingredientExplanation);
       }
     }, [state]);
     
@@ -71,52 +82,70 @@ function Result() {
         return;
       }
 
-    // Fallback: View past results
-    const fetchRecommendations = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('You must be logged in to view results.');
-        navigate('/');
-        return;
-      }
-
-      try {
+      // Fallback: View past results
+      const fetchRecommendations = async () => {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/recommend/latest', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        if (res.status === 404) {
-          // No quiz data for user
-          setNoData(true);
+        if (!token) {
+          alert('You must be logged in to view results.');
+          navigate('/');
           return;
         }
 
-        if (!res.ok) {
-        throw new Error('Failed to fetch past results');
-      }
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch('http://localhost:5000/recommend/latest', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
 
-        const data = await res.json();
+          if (res.status === 404) {
+            // No quiz data for user
+            setNoData(true);
+            return;
+          }
 
-        setRecommendations(data.recommendations ?? null);
-        setTopSkinConcerns(data.topSkinConcerns ?? []);
-        setTopIngredients(data.topIngredients ?? []);
-        setSkinConcernExp(data.skinConcernExplanation ?? '');
-        setProductExp(data.productExplanation ?? '');
-        setLatestResponse(data.latestResponse ?? null);
+          if (!res.ok) {
+          throw new Error('Failed to fetch past results');
+          }
 
-    } catch (err) {
-        alert('Something went wrong.');
-        navigate('/home');
-    } finally {
-        setLoading(false);
-    }
-};
+          const data = await res.json();
 
-    fetchRecommendations();
-  }, [state, navigate]);
+          setRecommendations(data.recommendations ?? null);
+          setTopSkinConcerns(data.topSkinConcerns ?? []);
+          setTopIngredients(data.topIngredients ?? []);
+          setBlockedIngredients(data.blockedIngredients ?? []);
+          setSkinConcernExp(data.skinConcernExplanation ?? '');
+          setProductExp(data.productExplanation ?? '');
+          setIngredientExp(data.ingredientExplanation ?? {});
+          setLatestResponse(data.latestResponse ?? null);
+
+        } catch (err) {
+            alert('Something went wrong.');
+            navigate('/home');
+        } finally {
+            setLoading(false);
+        }
+      };
+
+      fetchRecommendations();
+    }, [state, navigate]);
+
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (
+          ingredientRef.current &&
+          !ingredientRef.current.contains(event.target as Node)
+        ) {
+          setExpandedIngredient(null);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, []);
 
     const TAG_NAMES: Record<number, string> = {
         1: 'Dry skin',
@@ -139,6 +168,17 @@ function Result() {
       if (score >= 0.5) return "Severe";
       if (score >= 0.25) return "Moderate";
       return "Mild";
+    };
+
+    const formatIngredientName = (name: string) => {
+      return name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
+    const capitaliseFirst = (text: string) => {
+      return text.charAt(0).toUpperCase() + text.slice(1);
     };
 
     if (loading) {
@@ -171,6 +211,9 @@ function Result() {
             </div>
         );
     }
+
+    console.log("Top Ingredients:", topIngredients.map(i => i.name));
+    console.log("IngredientExp keys:", Object.keys(ingredientExp));
 
     return (
         <div className="relative min-h-screen bg-background text-[#1f628e] font-poppins flex flex-col">
@@ -265,21 +308,79 @@ function Result() {
               {topIngredients.length > 0 && (
               <div>
                 <div className="bg-white rounded-2xl shadow-sm p-6 border border-white">
-                <h3 className="text-2xl mb-2 pb-4">Top Ingredients</h3>
+                <h3 className="text-2xl mb-4">Top Ingredients</h3>
+                <p className="text-sm text-gray-700 mb-2 pb-4">Click on each ingredient to learn more.</p>
+                <div ref={ingredientRef}>
                 <ul className="flex flex-wrap justify-center gap-2">
-                  {topIngredients.map(({ name }, i) => (
-                    <li
-                      key={i}
-                      className="bg-gray-100 text-[#1f628e] text-gray-600 px-3 py-1 rounded-full shadow-sm"
-                    >
-                      {name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                    </li>
-                  ))}
+                  {topIngredients.map(({ name }) => {
+                    const formattedName = formatIngredientName(name);
+                    const key = name.trim().toLowerCase();
+                    const isExpanded = expandedIngredient === key;
+                    const explanation = ingredientExp?.[key];
+
+                    return (
+                      <li
+                        key={key}
+                        className={`relative px-3 py-1 rounded-full shadow-sm cursor-pointer ${
+                          isExpanded ? 'bg-gray-200' : 'bg-gray-100'
+                        } text-[#1f628e] text-gray-600`}
+                        onClick={() => {
+                          console.log('Clicked:', key, 'Explanation:', explanation);
+                          setExpandedIngredient(isExpanded ? null : key)
+                        }}
+                      >
+                        {formattedName}
+
+                        {explanation && isExpanded && (
+                          <div className="absolute z-20 top-full mt-2 left-1/2 -translate-x-1/2 w-max max-w-xs bg-background text-gray-800 px-3 py-2 rounded-lg shadow-lg">
+                            {capitaliseFirst(explanation)}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
                 </div>
                 </div>
+                </div>
               )}
-            
+
+              {/* Blocked Ingredients */}
+              {blockedIngredients.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-sm p-6 border border-white">
+                  <h3 className="text-2xl mb-4 text-[#1f628e] items-center gap-2">
+                    Ingredients to Avoid
+                  </h3>
+
+                  <p className="text-sm text-gray-700 mb-2">
+                    ⚠️ Based on your skin sensitivities, you should avoid the following ingredients:
+                  </p>
+
+                  {!showFullBlocked ? (
+                    <p className="text-sm text-gray-800 italic">
+                      {blockedIngredients.slice(0, 3).map(formatIngredientName).join(', ')}
+                      {blockedIngredients.length > 3 && (
+                        <> and {blockedIngredients.length - 3} more.</>
+                      )}
+                    </p>
+                  ) : (
+                    <ul className="mt-2 list-disc list-inside text-sm text-gray-700 space-y-1 text-left pl-10">
+                      {blockedIngredients.map((name) => (
+                        <li key={name}>{formatIngredientName(name)}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {blockedIngredients.length > 3 && (
+                    <button
+                      className="mt-2 text-sm text-[#1f628e] hover:underline"
+                      onClick={() => setShowFullBlocked(!showFullBlocked)}
+                    >
+                      {showFullBlocked ? 'Hide full list' : 'View full list'}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Right Column */}
