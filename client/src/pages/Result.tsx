@@ -3,9 +3,12 @@ import { useEffect, useState, useRef } from 'react';
 import { useReturnToHome  } from '../hooks/returnToHome';
 
 type Product = {
-    name: string;
-    score: number;
-    ingredients: Record<string, number>;
+  id: number;
+  name: string;
+  price: string;
+  score: number;
+  category_id: number;
+  unblocked_ingredients?: { name: string; score: number }[];
 };
 
 type Recommendations = Record<string, Product>;
@@ -27,6 +30,7 @@ function Result() {
 
     const [noData, setNoData] = useState(false);
     const [showFullBlocked, setShowFullBlocked] = useState(false);
+    const [viewMore, setViewMore] = useState(false);
 
     const { state } = useLocation();
     const localFirstName = localStorage.getItem('firstName');
@@ -48,6 +52,13 @@ function Result() {
     const [expandedIngredient, setExpandedIngredient] = useState<string | null>(null);
 
     const ingredientRef = useRef<HTMLDivElement>(null);
+
+    const splitExplanations = productExp
+      ? productExp
+          .split(/\n+/)
+          .map(p => p.trim())
+          .filter(Boolean)
+      : [];
 
     useEffect(() => {
       if (state?.recData?.skinConcernExplanation) {
@@ -322,8 +333,8 @@ function Result() {
                       <li
                         key={key}
                         className={`relative px-3 py-1 rounded-full shadow-sm cursor-pointer ${
-                          isExpanded ? 'bg-gray-200' : 'bg-gray-100'
-                        } text-[#1f628e] text-gray-600`}
+                          isExpanded ? 'bg-[#406485]' : 'bg-[#7e94a8]'
+                        } text-white text-small`}
                         onClick={() => {
                           console.log('Clicked:', key, 'Explanation:', explanation);
                           setExpandedIngredient(isExpanded ? null : key)
@@ -331,11 +342,11 @@ function Result() {
                       >
                         {formattedName}
 
-                        {explanation && isExpanded && (
-                          <div className="absolute z-20 top-full mt-2 left-1/2 -translate-x-1/2 w-max max-w-xs bg-background text-gray-800 px-3 py-2 rounded-lg shadow-lg">
+                        {isExpanded && explanation ? (
+                          <div className="absolute z-20 top-full mt-2 left-1/2 -translate-x-1/2 w-max max-w-xs bg-gray-100 text-gray-800 px-3 py-2 rounded-lg shadow-lg">
                             {capitaliseFirst(explanation)}
                           </div>
-                        )}
+                        ) : null}
                       </li>
                     );
                   })}
@@ -390,14 +401,68 @@ function Result() {
                 <h3 className="text-2xl text-[#1f628e] pb-4 mb-2">Top Product Picks</h3>
                 {['cleanser', 'toner', 'serum', 'moisturiser'].map((cat, index) => {
                   const rec = recommendations[cat];
+                  const explanation = splitExplanations[index] || '';
+
                   return rec ? (
-                    <div className="bg-white rounded-2xl shadow-sm p-3 border border-white mb-6">
-                    <div key={cat} className="w-full text-[#1f628e]">
-                      <h4 className="font-medium">
+                    <div className="bg-white rounded-2xl shadow-sm p-6 border border-white mb-6">
+                    <div key={cat} className="pb-4 mb-2 w-full">
+                      <div className="flex flex-col justify-center items-center bg-gray-100 rounded-full px-5 py-3 w-full text-center mb-6">
+                      <div>
+                      <h4 className="font-medium text-[#1f628e]">
                         Step {index + 1}: {cat.charAt(0).toUpperCase() + cat.slice(1)}
                       </h4>
                       <p className="text-lg font-light text-gray-900">{rec.name}</p>
+                      </div>
+                      </div>
+                      <span className="inline-block bg-gray-100 rounded-full px-3 py-1 text-gray-700 text-center mb-2">
+                        Estimated Price:
+                      </span>
+                      <p className="text-sm text-gray-700 mb-2">${rec.price}</p> 
                     </div>
+
+                    {/* Ingredient list */}
+                    {rec.unblocked_ingredients!.length > 0 && (
+                      <div className="mt-2">
+                      <span className="inline-block bg-gray-100 rounded-full px-3 py-1 text-gray-700 text-center mb-2">
+                        Beneficial Ingredients For You:
+                      </span>
+                      <ul className="pt-2 px-6 flex flex-wrap gap-2 justify-center pb-10">
+                        {(() => {
+                          const scored = rec.unblocked_ingredients?.filter(i => i.score > 0) ?? [];
+                          const maxScore = Math.max(...scored.map(i => i.score));
+
+                          return scored
+                            .sort((a, b) => b.score - a.score)
+                            .map((ing, idx) => {
+                              const formattedName = formatIngredientName(ing.name);
+
+                              const blueShade = Math.floor(80 - (ing.score / maxScore) * 25); 
+                              const backgroundColor = `hsl(208, 28%, ${blueShade}%)`;
+
+                              return (
+                                <li
+                                  key={idx}
+                                  style={{ backgroundColor }}
+                                  className="text-white px-3 py-1 rounded-full shadow-sm text-sm"
+                                >
+                                  {formattedName}
+                                </li>
+                              );
+                            });
+                        })()}
+                      </ul>
+                      </div>
+                    )}
+
+                      {/* Explanation paragraph */}
+                      <span className="inline-block bg-gray-100 rounded-full px-3 py-1 text-gray-700 text-center mb-2">
+                        Why This Product? 
+                      </span>
+                      {explanation && (
+                        <p className="pb-4 px-4 p-2 text-gray-700 whitespace-pre-line leading-relaxed text-justify">
+                          {explanation}
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <p key={cat} className="text-sm italic text-gray-600">
@@ -406,19 +471,6 @@ function Result() {
                   );
                 })}
               </div>
-
-              {/* Product Explanation */}
-              {productExp && (
-                  <div className="bg-white rounded-2xl shadow-sm p-6 border border-white">
-                    <h3 className="text-2xl mb-4 text-[#1f628e] items-center gap-2">
-                      Why These Products?
-                    </h3>
-                    <p className="text-gray-700 whitespace-pre-line leading-relaxed text-justify">
-                      {productExp}
-                    </p>
-                  </div>
-              )}
-
             </div>
           </div>
         </div>

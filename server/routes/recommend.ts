@@ -131,14 +131,16 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       console.log('Final recommendations:', topProducts);
 
       const readableRecommendations: Record<string, any> = {};
+
       for (const [catId, product] of Object.entries(topProducts)) {
         const name = CATEGORY_MAP[+catId];
         if (name) {
             readableRecommendations[name] = product;
         } else {
-          console.warn(`⚠️ Unmapped category ID ${catId} in results`);
+          console.warn(`Unmapped category ID ${catId} in results`);
         }
       }
+
       console.log('Final recommendations to frontend:', readableRecommendations);
 
     // Step 6: Send Top Tags and Ingredients
@@ -160,10 +162,29 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       const topIngredientIds = unblockedIngredientScores.map(i => i.ingredientId);
       const blockedIngredientIds = Array.from(blockedIngredients);
 
-      const ingredientIds = topIngredientIds.concat(blockedIngredientIds);
+      const allUsedProductIngredientIds = Object.values(readableRecommendations)
+        .flatMap(product => productIngredients[product.id] || []);
+
+      const ingredientIds = topIngredientIds
+        .concat(blockedIngredientIds)
+        .concat(allUsedProductIngredientIds);
+
       const uniqueIngredientIds = Array.from(new Set(ingredientIds));
 
       const ingredientNameMap = await getIngredientNames(uniqueIngredientIds); // for all blocked and unblocked
+
+      for (const [cat, product] of Object.entries(readableRecommendations)) {
+        const pid = product.id;
+        const ingredientIds = productIngredients[pid] || [];
+        const unblocked = ingredientIds.filter(id => !blockedIngredients.has(id));
+        const scoredUnblocked = unblocked
+          .map(id => ({
+            name: ingredientNameMap[id] || 'Unknown',
+            score: ingredientScores[id] ?? 0  
+          }))
+          .sort((a, b) => b.score - a.score);
+        product.unblocked_ingredients = scoredUnblocked;
+      }
 
       const topIngredientsWithNames = unblockedIngredientScores.map(({ ingredientId, score }) => ({
         ingredientId,
@@ -237,7 +258,7 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
     Below are the ingredient lists of 4 recommended products:
     ${orderedProductLines.join('\n')}
 
-    These ingredient lists have been curated to show the most relevant ingredients for each product. Assume they are complete for your explanation.
+    These ingredient lists have been curated to show the most relevant ingredients for each product. 
 
     Write 4 short paragraphs (around 30-50 words each), one for each category, in the following order: cleanser, toner, serum, moisturiser. Each paragraph should start with "For [CategoryName],".
     Explain clearly and insightfully why the product was selected for the user. Connect each product's ingredients to their concerns and preferences. Use second-person language. 
@@ -284,9 +305,14 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       });
 
       const rawText = explanationResponse.choices[0].message.content || '';
-      ingredientExplanation = JSON.parse(rawText);
+      const parsed = JSON.parse(rawText);
+
+      const top10Names = topIngredientsWithNames.map(i => i.name.trim().toLowerCase());
+
       ingredientExplanation = Object.fromEntries(
-        Object.entries(ingredientExplanation).map(([k, v]) => [k.trim().toLowerCase(), v])
+        Object.entries(parsed)
+          .map(([k, v]) => [k.trim().toLowerCase(), v])
+          .filter(([k]) => top10Names.includes(k as string))
       );
     } catch (e) {
       console.error('⚠️ Failed to generate ingredient explanations:', e);
