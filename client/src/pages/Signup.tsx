@@ -15,7 +15,7 @@ function Signup() {
         setIsLoading(true);
 
         try {
-            const res = await fetch('https://glowguide-lqx9.onrender.com/auth/signup', {
+            const res = await fetch('http://localhost:5000/auth/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

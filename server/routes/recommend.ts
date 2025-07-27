@@ -289,7 +289,8 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
 
     ${topIngredientsFormatted}
 
-    Return your response as a JSON object in the format:
+    Return ONLY a valid JSON object, without extra comments or text. Make sure there is a comma after each entry.
+    Format:
     {
       "IngredientName1": "short explanation...",
       "IngredientName2": "short explanation...",
@@ -306,6 +307,9 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
       });
 
       const rawText = explanationResponse.choices[0].message.content || '';
+
+      console.log('🧪 Raw ingredient explanation response:\n', rawText);
+
       const parsed = JSON.parse(rawText);
 
       const top10Names = topIngredientsWithNames.map(i => i.name.trim().toLowerCase());
@@ -315,6 +319,9 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
           .map(([k, v]) => [k.trim().toLowerCase(), v])
           .filter(([k]) => top10Names.includes(k as string))
       );
+
+      console.log('🔍 Final ingredientExplanation keys before save:', Object.keys(ingredientExplanation));
+
     } catch (e) {
       console.error('⚠️ Failed to generate ingredient explanations:', e);
       ingredientExplanation = {};
@@ -323,7 +330,7 @@ router.post('/recommendations', authenticate, async (req: AuthenticatedRequest, 
     // Step 8: Save results
       await pool.query(`
         INSERT INTO user_recommendations (user_id, recommendations, skin_concerns, ingredients, blocked_ingredients, skin_concern_exp, product_exp, ingredient_exp, updated_at)
-        VALUES ($1, $2::jsonb, $3::jsonb, $4::jsonb, $5::jsonb, $6, $7, $8, NOW())
+        VALUES ($1, $2::jsonb, $3::jsonb, $4::jsonb, $5::jsonb, $6, $7, $8::jsonb, NOW())
         ON CONFLICT (user_id)
         DO UPDATE SET 
           recommendations = EXCLUDED.recommendations, 
@@ -387,16 +394,25 @@ router.get('/latest', authenticate, async (req: AuthenticatedRequest, res: Respo
 
     const { recommendations, topSkinConcerns, topIngredients, blockedIngredients, skinConcernExplanation, productExplanation, ingredientExplanation, latestResponse } = rows[0];
 
-    const normalizedIngredientExplanation: Record<string, string> = {};
+    console.log('🧪 Raw ingredientExplanation from DB:', ingredientExplanation);
 
-    if (ingredientExplanation && typeof ingredientExplanation === 'object') {
-      for (const entry of Array.isArray(ingredientExplanation) ? ingredientExplanation : Object.values(ingredientExplanation)) {
-        if (entry?.name && entry?.explanation) {
-          const key = entry.name.trim().toLowerCase();
-          normalizedIngredientExplanation[key] = entry.explanation;
-        }
+    let normalizedIngredientExplanation: Record<string, string> = {};
+
+    if (typeof ingredientExplanation === 'string') {
+      try {
+        normalizedIngredientExplanation = JSON.parse(ingredientExplanation);
+      } catch {
+        console.error('⚠️ Failed to parse stringified ingredientExplanation');
       }
+    } else if (
+      ingredientExplanation &&
+      typeof ingredientExplanation === 'object' &&
+      !Array.isArray(ingredientExplanation)
+    ) {
+      normalizedIngredientExplanation = ingredientExplanation as Record<string, string>;
     }
+
+    console.log('✅ Normalized IngredientExp sent:', normalizedIngredientExplanation);
 
     res.json({ recommendations, topSkinConcerns, topIngredients, blockedIngredients, skinConcernExplanation, productExplanation, ingredientExplanation: normalizedIngredientExplanation, latestResponse });
   } catch (err) {

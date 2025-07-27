@@ -144,6 +144,9 @@ function Result() {
       : [];
 
     useEffect(() => {
+
+      if (!state?.recData) return;
+      
       if (state?.recData?.skinConcernExplanation) {
         setSkinConcernExp(state.recData.skinConcernExplanation);
       }
@@ -172,6 +175,11 @@ function Result() {
         setRecommendations(state?.recData?.recommendations ?? null);
         setTopSkinConcerns(state?.recData?.topSkinConcerns ?? []);
         setTopIngredients(state?.recData?.topIngredients ?? []);
+        setBlockedIngredients(state?.recData?.blockedIngredients ?? []);
+        setSkinConcernExp(state?.recData?.skinConcernExplanation ?? '');
+        setProductExp(state?.recData?.productExplanation ?? '');
+        setIngredientExp(state?.recData?.ingredientExplanation ?? {});
+        setLatestResponse(state?.recData?.latestResponse ?? null);
         setLoading(false);
         return;
       }
@@ -187,7 +195,7 @@ function Result() {
 
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch('https://glowguide-lqx9.onrender.com/recommend/latest', {
+          const res = await fetch('http://localhost:5000/recommend/latest', {
             headers: {
               Authorization: `Bearer ${token}`
             }
