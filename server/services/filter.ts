@@ -30,8 +30,20 @@ export function filterByBudget(
     userScores: Record<number, number>,
     productDetails: Record<number, ProductDetails>
 ): Record<number, number> {
-    const budgetScore = userScores[18] || 0;
-    const premiumScore = userScores[19] || 0;
+    const budgetScore = userScores[18] || 0; 
+    const premiumScore = userScores[19] || 0; 
+
+    let maxBudget = Infinity;
+
+    if (budgetScore === 2) {
+        maxBudget = 20;
+    } else if (budgetScore === 1) {
+        maxBudget = 30;
+    } else if (premiumScore === 1) {
+        maxBudget = 50;
+    } else if (premiumScore === 2) {
+        maxBudget = Infinity;
+    }
 
     let filtered: Record<number, number> = {};
 
@@ -40,14 +52,8 @@ export function filterByBudget(
         const product = productDetails[prodId];
         if (!product) continue;
 
-        const price = product.price;
-
-        if (budgetScore > premiumScore && price <= 30) {
-            filtered[prodId] = productScores[prodId];
-        } else if (premiumScore > budgetScore) {
-            filtered[prodId] = productScores[prodId];
-        } else if (budgetScore === premiumScore) {
-            filtered[prodId] = productScores[prodId];
+        if (product.price <= maxBudget) {
+        filtered[prodId] = productScores[prodId];
         }
     }
     return filtered;

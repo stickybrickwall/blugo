@@ -186,7 +186,7 @@ function Quiz() {
             
             console.log('Formatted responses:', responses);
             
-            const res = await fetch('http://localhost:5000/quiz', {
+            const res = await fetch('https://glowguide-lqx9.onrender.com/quiz', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -204,7 +204,7 @@ function Quiz() {
             }
             console.log('Quiz saved');
 
-            const recRes = await fetch('http://localhost:5000/recommend/recommendations', {
+            const recRes = await fetch('https://glowguide-lqx9.onrender.com/recommend/recommendations', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

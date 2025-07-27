@@ -38,7 +38,7 @@ function Account() {
 
     try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/account/change-password', {
+        const res = await fetch('https://glowguide-lqx9.onrender.com/account/change-password', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -65,7 +65,7 @@ function Account() {
 
     try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/account', {
+        const res = await fetch('https://glowguide-lqx9.onrender.com/account', {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`
